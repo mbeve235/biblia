@@ -1,0 +1,60 @@
+{
+  "translation": {
+    "name": "Tradução Exemplo",
+    "abbreviation": "EXE",
+    "language": "Português",
+    "copyright": "Domínio público (exemplo)",
+    "version": "1.0",
+    "source": "Modelo incluído no projecto",
+    "description": "Tradução de demonstração para testar a importação"
+  },
+  "books": [
+    {
+      "name": "Génesis",
+      "abbreviation": "Gn",
+      "testament": "AT",
+      "chapters": [
+        {
+          "chapter": 1,
+          "verses": [
+            { "verse": 1, "text": "No princípio criou Deus os céus e a terra." },
+            { "verse": 2, "text": "E a terra era sem forma e vazia; e havia trevas sobre a face do abismo." },
+            { "verse": 3, "text": "E disse Deus: Haja luz; e houve luz." },
+            { "verse": 4, "text": "E viu Deus que era boa a luz." },
+            { "verse": 5, "text": "E Deus chamou à luz Dia; e às trevas chamou Noite." }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Salmos",
+      "abbreviation": "Sl",
+      "testament": "AT",
+      "chapters": [
+        {
+          "chapter": 23,
+          "verses": [
+            { "verse": 1, "text": "O SENHOR é o meu pastor; nada me faltará." },
+            { "verse": 2, "text": "Deitar-me faz em verdes pastos, guia-me mansamente a águas tranquilas." },
+            { "verse": 3, "text": "Refrigera a minha alma; guia-me pelas veredas da justiça." }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "João",
+      "abbreviation": "Jo",
+      "testament": "NT",
+      "chapters": [
+        {
+          "chapter": 3,
+          "verses": [
+            { "verse": 14, "text": "E, como Moisés levantou a serpente no deserto, assim importa que o Filho do homem seja levantado." },
+            { "verse": 15, "text": "Para que todo aquele que nele crê não pereça, mas tenha a vida eterna." },
+            { "verse": 16, "text": "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigénito." }
+          ]
+        }
+      ]
+    }
+  ]
+}

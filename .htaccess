@@ -1,0 +1,41 @@
+# =====================================================================
+# BÍBLIA WEB — Apache (XAMPP)
+# Requisito: mod_rewrite activo (activado por omissão no XAMPP).
+# Se as URLs amigáveis não funcionarem, a aplicação continua a funcionar
+# com ?translation=...&book=...&chapter=...
+# =====================================================================
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # API → router central
+  RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+  # Pesquisa amigável: /pesquisa/amor (tem de vir ANTES da regra genérica de 2 segmentos)
+  RewriteRule ^(?:[Pp]esquisa)/([^/]+)/?$ pesquisa.php?q=$1 [QSA,L]
+
+  # URL amigável: /biblia/ARC/joao/3 ou /biblia/ARC/joao → leitura/biblia.
+  # Em contexto de directório (.htaccess dentro da pasta do projecto), o Apache
+  # retira o prefixo /biblia/ do caminho antes de aplicar as regras — por isso
+  # o prefixo 'biblia/' é opcional e cobre também instalação na raiz do htdocs.
+  # O lookahead evita capturar pastas reais (api, admin, assets, …).
+  RewriteRule ^(?!api/|admin/|assets/)(?:[Bb]iblia/)?([A-Za-z0-9\-]+)/([a-z0-9\-]+)/(\d+)/?$ leitura.php?translation=$1&book=$2&chapter=$3 [QSA,L]
+  RewriteRule ^(?!api/|admin/|assets/)(?:[Bb]iblia/)?([A-Za-z0-9\-]+)/([a-z0-9\-]+)/?$ biblia.php?translation=$1&book=$2 [QSA,L]
+  RewriteRule ^(?:[Bb]iblia)/?$ biblia.php [QSA,L]
+</IfModule>
+
+# Bloquear acesso directo a pastas sensíveis. O '(?:[^/]+/)?' aceita tanto
+# instalação na raiz do htdocs (/config/…) como numa subpasta (/biblia/config/…).
+RedirectMatch 403 ^/(?:[^/]+/)?(config|includes|utils|database|logs|uploads|tests)/
+
+# Cabeçalhos de segurança
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Página inicial
+DirectoryIndex index.php

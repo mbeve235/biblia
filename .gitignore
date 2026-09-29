@@ -1,0 +1,12 @@
+# Artefactos de execução
+logs/
+uploads/*
+!uploads/.gitkeep
+install.lock
+
+# Backups/arquivos locais
+*.zip
+
+# Sistema
+.DS_Store
+Thumbs.db
