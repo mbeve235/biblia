@@ -3,12 +3,28 @@
  * Pesquisa — formulário e resultados.
  * Suporta palavras, frases "entre aspas" e referências (João 3:16).
  */
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/bootstrap.php';
+boot_session();
 
 $q = trim((string) ($_GET['q'] ?? ''));
 $transAbbr = trim((string) ($_GET['translation'] ?? ''));
 $bookSlug  = trim((string) ($_GET['book'] ?? ''));
 $testament = trim((string) ($_GET['testament'] ?? ''));
+
+// Título + Open Graph específicos da pesquisa (antes do header)
+if ($q !== '') {
+    $pageTitle = 'Pesquisa: ' . $q;
+    $ogTitle   = '“' . $q . '” — pesquisa bíblica';
+    $ogDesc    = 'Resultados da pesquisa por ' . $q . ' nas traduções disponíveis.';
+} else {
+    $pageTitle = 'Pesquisa bíblica';
+    $ogTitle   = 'Pesquisa bíblica';
+    $ogDesc    = 'Pesquise palavras, frases exactas ou referências como João 3:16 em todas as traduções.';
+}
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$ogUrl  = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . ($_SERVER['REQUEST_URI'] ?? '/');
+
+require_once __DIR__ . '/includes/header.php';
 
 $translations = db_all('SELECT abbreviation, name FROM translations WHERE status = "active" ORDER BY name');
 $books = db_all('SELECT name, slug FROM books ORDER BY book_order');

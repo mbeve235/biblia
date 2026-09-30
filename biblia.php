@@ -3,7 +3,8 @@
  * Bíblia — navegação Livro → Capítulo.
  * ?book=joao mostra os capítulos; sem parâmetro mostra os 66 livros.
  */
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/bootstrap.php';
+boot_session();
 
 $activeAbbr = $_GET['translation'] ?? ($_COOKIE['bw_translation'] ?? DEFAULT_TRANSLATION);
 $trans = db_one('SELECT id, name, abbreviation FROM translations WHERE abbreviation = ? AND status = "active"', [$activeAbbr]);
@@ -12,25 +13,38 @@ if (!$trans) {
 }
 
 $bookSlug = trim((string) ($_GET['book'] ?? ''));
+$selectedBook = $bookSlug !== '' ? db_one('SELECT * FROM books WHERE slug = ?', [$bookSlug]) : null;
+
+// Título + Open Graph específicos (antes do header, para <title> e prévias)
+if ($selectedBook) {
+    $pageTitle = $selectedBook['name'];
+    $ogTitle   = $selectedBook['name'] . ' — ' . (int) $selectedBook['chapters_count'] . ' capítulo(s)';
+    $ogDesc    = 'Escolha o capítulo de ' . $selectedBook['name'] . ' para ler' . ($trans ? ' na tradução ' . $trans['abbreviation'] : '') . '.';
+} else {
+    $pageTitle = 'Bíblia';
+    $ogTitle   = 'Escolha um livro da Bíblia';
+    $ogDesc    = '66 livros — Antigo e Novo Testamento — em várias traduções.';
+}
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$ogUrl  = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . ($_SERVER['REQUEST_URI'] ?? '/');
+
+require_once __DIR__ . '/includes/header.php';
+
 $groups = db_all('SELECT * FROM book_groups ORDER BY testament, group_order');
 $books  = db_all('SELECT * FROM books ORDER BY book_order');
 $byGroup = [];
 foreach ($books as $b) $byGroup[(int) $b['group_id']][] = $b;
 
-// Modo: capítulos de um livro
-$selectedBook = null;
+// Modo: capítulos de um livro (livro já resolvido antes do header, para o OG)
 $chaptersWithVerses = [];
-if ($bookSlug !== '') {
-    $selectedBook = db_one('SELECT * FROM books WHERE slug = ?', [$bookSlug]);
-    if ($selectedBook && $trans) {
-        $rows = db_all(
-            'SELECT c.chapter_number, EXISTS(SELECT 1 FROM verses v WHERE v.chapter_id = c.id AND v.translation_id = ?) AS has_verses
-             FROM chapters c WHERE c.book_id = ? ORDER BY c.chapter_number',
-            [$trans['id'], $selectedBook['id']]
-        );
-        foreach ($rows as $r) {
-            $chaptersWithVerses[(int) $r['chapter_number']] = (bool) $r['has_verses'];
-        }
+if ($selectedBook && $trans) {
+    $rows = db_all(
+        'SELECT c.chapter_number, EXISTS(SELECT 1 FROM verses v WHERE v.chapter_id = c.id AND v.translation_id = ?) AS has_verses
+         FROM chapters c WHERE c.book_id = ? ORDER BY c.chapter_number',
+        [$trans['id'], $selectedBook['id']]
+    );
+    foreach ($rows as $r) {
+        $chaptersWithVerses[(int) $r['chapter_number']] = (bool) $r['has_verses'];
     }
 }
 ?>
@@ -74,10 +88,9 @@ if ($bookSlug !== '') {
         <div class="nav-label" style="margin:.9rem .1rem .4rem"><?= e($g['name']) ?></div>
         <div class="book-grid">
           <?php foreach ($byGroup[(int) $g['id']] ?? [] as $b): ?>
-            <a class="btn" style="justify-content:space-between;font-weight:500"
-               href="<?= url('/biblia.php?book=' . $b['slug'] . '&translation=' . urlencode($trans['abbreviation'] ?? '')) ?>">
+            <a class="book-card" href="<?= url('/biblia.php?book=' . $b['slug'] . '&translation=' . urlencode($trans['abbreviation'] ?? '')) ?>">
               <span><?= e($b['name']) ?></span>
-              <small style="color:var(--text-faint)"><?= (int) $b['chapters_count'] ?></small>
+              <span class="bk-meta"><small><?= (int) $b['chapters_count'] ?></small><i class="fas fa-chevron-right"></i></span>
             </a>
           <?php endforeach; ?>
         </div>

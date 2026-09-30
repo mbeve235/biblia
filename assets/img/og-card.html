@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    background: linear-gradient(135deg, #6d4df6 0%, #9c6bff 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff;
+  }
+  .logo { width: 150px; height: 150px; border-radius: 34px; background: rgba(255,255,255,.16);
+          display: grid; place-items: center; margin-bottom: 34px;
+          box-shadow: 0 18px 50px rgba(20, 10, 60, .35); }
+  h1 { font-size: 92px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  p  { font-size: 34px; font-weight: 400; color: rgba(255,255,255,.85); margin-top: 16px; }
+  .tag { margin-top: 30px; font-size: 24px; font-weight: 600; color: #fff;
+         border: 2px solid rgba(255,255,255,.55); border-radius: 999px; padding: .5rem 1.6rem; }
+</style>
+</head>
+<body>
+  <div class="logo">
+    <svg width="96" height="96" viewBox="0 0 64 64">
+      <rect width="64" height="64" rx="14" fill="#fff"/>
+      <path d="M32 20c-4-3.4-9.6-4.6-15-4.6v29c5.4 0 11 1.2 15 4.6 4-3.4 9.6-4.6 15-4.6v-29c-5.4 0-11 1.2-15 4.6z" fill="#6d4df6"/>
+      <path d="M32 20v29" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M22.5 27h7M26 23.5v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M37 27h7M37 32h7M37 37h4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <h1>Bíblia Web</h1>
+  <p>Leia, pesquise e compare traduções</p>
+  <div class="tag">Favoritos · Notas · Histórico</div>
+</body>
+</html>

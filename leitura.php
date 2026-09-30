@@ -2,7 +2,8 @@
 /**
  * Leitura — exibe um capítulo: ?translation=ARC&book=joao&chapter=3
  */
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/bootstrap.php';
+boot_session();
 $bodyClass = 'reading';
 
 $abbr   = trim((string) ($_GET['translation'] ?? DEFAULT_TRANSLATION));
@@ -10,7 +11,6 @@ $slug   = trim((string) ($_GET['book'] ?? 'joao'));
 $chapNum= max(1, (int) ($_GET['chapter'] ?? 1));
 $anchor = (int) ($_GET['verse'] ?? 0);
 
-$translations = db_all('SELECT id, name, abbreviation FROM translations WHERE status = "active" ORDER BY name');
 $trans = db_one('SELECT * FROM translations WHERE abbreviation = ? AND status = "active"', [$abbr]);
 if (!$trans) {
     $trans = db_one('SELECT * FROM translations WHERE status = "active" ORDER BY id LIMIT 1');
@@ -28,6 +28,29 @@ if ($trans && $book && $chapterRow) {
         [$trans['id'], $chapterRow['id']]
     );
 }
+
+// Título + Open Graph (definidos ANTES do header para <title> e prévias correctas)
+$reference = $book ? $book['name'] . ' ' . $chapNum : 'Capítulo';
+$pageTitle = $reference;
+$ogTitle   = $reference . ($trans ? ' · ' . $trans['abbreviation'] : '');
+if (!empty($verses)) {
+    $ogDesc = excerpt($verses[0]['text'], 160);
+} elseif ($trans && $book) {
+    $ogDesc = 'Leia ' . $book['name'] . ' ' . $chapNum . ' na tradução ' . $trans['name'] . '.';
+} else {
+    $ogDesc = 'Leia, pesquise e compare traduções da Bíblia.';
+}
+$ogUrl = $book
+    ? url('/' . rawurlencode($abbr) . '/' . rawurlencode($book['slug']) . '/' . $chapNum)
+    : url('/');
+
+// Leitura inexistente (livro/capítulo inválido): 404 real com via de fuga
+if (!$book || !$chapterRow) {
+    http_response_code(404);
+    $noindex = true;
+}
+
+require_once __DIR__ . '/includes/header.php';
 
 // Navegação prev/next
 $prevLink = $nextLink = null;
@@ -76,9 +99,6 @@ if ($user = current_user()) {
         } catch (Throwable $e) { /* ignore */ }
     }
 }
-
-$reference = $book ? $book['name'] . ' ' . $chapNum : 'Capítulo';
-$pageTitle = $reference;
 ?>
 
 <?php if (!$book || !$trans): ?>
@@ -87,14 +107,18 @@ $pageTitle = $reference;
     <h2>Leitura não encontrada</h2>
     <p>Verifique se a tradução e o livro existem.</p>
     <a class="btn btn-primary" href="<?= url('/biblia.php') ?>">Escolher outro livro</a>
+    <a class="btn" href="<?= url('/index.php') ?>">Voltar ao início</a>
   </div>
 <?php else: ?>
 
 <div class="reader-header">
   <div class="crumb">TRADUÇÃO: <?= e($trans['abbreviation']) ?></div>
   <h1>
-    <a href="#" data-open-books style="color:inherit"><?= e($book['name']) ?> <?= $chapNum ?></a>
-    <i class="fas fa-chevron-down" style="font-size:.9rem;color:var(--text-faint)"></i>
+    <a href="#" data-open-books class="book-switcher" title="Trocar de livro ou capítulo" aria-haspopup="dialog" aria-label="Trocar de livro ou capítulo — actualmente em <?= e($book['name']) ?> <?= $chapNum ?>">
+      <i class="fas fa-book-bible"></i>
+      <span><?= e($book['name']) ?> <?= $chapNum ?></span>
+      <i class="fas fa-chevron-down chv"></i>
+    </a>
   </h1>
   <p style="color:var(--text-soft);font-size:.9rem"><?= e($trans['name']) ?></p>
 </div>
@@ -181,7 +205,13 @@ function bwCopyVerse(num, el) {
 function bwShareVerse(num, el) {
   const text = el.closest('.verse').cloneNode(true);
   text.querySelectorAll('.vtools,.vnum').forEach(n => n.remove());
-  shareText('Bíblia Web', bwVerseRef(num, el) + ' — ' + text.textContent.trim());
+  // Link amigável para o versículo: /biblia/ARC/joao/3?verse=16#v16
+  const url = new URL(BASE_URL + '/<?= rawurlencode($abbr) ?>/<?= rawurlencode($book['slug'] ?? '') ?>/<?= (int) $chapNum ?>', location.href);
+  url.searchParams.set('verse', String(num));
+  url.hash = 'v' + num;
+  shareText(<?= json_encode(($book['name'] ?? '') . ' ' . $chapNum . ' — ' . $abbr) ?>,
+            bwVerseRef(num, el) + ' — ' + text.textContent.trim(),
+            url.toString());
 }
 function bwToggleFav(btn, verseId) {
   VerseActions.toggleFavorite(verseId, btn).then(() => {
@@ -228,6 +258,8 @@ document.getElementById('note-delete')?.addEventListener('click', async () => {
 });
 
 // Navegação pelo modal de livros/capítulos (BookPicker)
+// Contexto actual: o modal destaca o livro/capítulo em leitura
+window.bookPickerCurrent = { slug: <?= json_encode($book['slug'] ?? null) ?>, chapter: <?= (int) $chapNum ?> };
 window.onPickChapter = (slug, name, ch) => {
   const url = new URL(BASE_URL + '/leitura.php', location.href);
   url.searchParams.set('translation', <?= json_encode($abbr) ?>);

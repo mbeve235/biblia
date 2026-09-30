@@ -37,5 +37,13 @@ RedirectMatch 403 ^/(?:[^/]+/)?(config|includes|utils|database|logs|uploads|test
   Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
+# MIME do manifest (alguns Windows/Apache não o conhecem por omissão)
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
 # Página inicial
 DirectoryIndex index.php
+
+# 404 amigável (ajuste o prefixo se mover a app de pasta)
+ErrorDocument 404 /biblia/404.php

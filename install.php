@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Instalação — <?= e(APP_NAME) ?></title>
+<link rel="icon" href="<?= url('assets/img/favicon.svg') ?>" type="image/svg+xml">
 <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
 </head>
 <body>

@@ -118,11 +118,16 @@ async function copyText(text) {
   }
 }
 
-async function shareText(title, text) {
+async function shareText(title, text, url = '') {
+  // Mensagem completa e consistente: título, texto e link sempre juntos
+  const full = (title ? title + '\n\n' : '') + text + (url ? '\n\n' + url : '');
   if (navigator.share) {
-    try { await navigator.share({ title, text }); } catch (e) { /* cancelado */ }
+    try {
+      const payload = url ? { title, text, url } : { title, text };
+      await navigator.share(payload);
+    } catch (e) { /* cancelado */ }
   } else {
-    copyText(title + ' — ' + text);
+    copyText(full);
   }
 }
 
@@ -132,6 +137,10 @@ async function shareText(title, text) {
 const BookPicker = {
   books: null,
   onPickChapter: null, // callback(slug, bookName, chapter, hasVerses)
+  currentSlug: null,   // livro/capítulo actualmente a ler (para destacar no modal)
+  currentChapter: 0,
+  _query: '',
+  _lastTestament: 'AT',
 
   async ensureLoaded() {
     if (!this.books) {
@@ -140,8 +149,11 @@ const BookPicker = {
     }
   },
 
-  open(onPickChapter) {
+  open(onPickChapter, currentSlug = null, currentChapter = 0) {
     this.onPickChapter = onPickChapter;
+    this.currentSlug = currentSlug;
+    this.currentChapter = currentChapter;
+    this._query = '';
     this.ensureLoaded()
       .then(() => this.renderBooks('AT'))
       .catch((e) => toast(e.message, 'error'));
@@ -152,13 +164,70 @@ const BookPicker = {
     document.getElementById('modal-books').classList.remove('open');
   },
 
+  // Normaliza acentos para a pesquisa ("genesis" encontra "Génesis")
+  norm(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  },
+
+  buildSearch() {
+    const wrap = document.createElement('div');
+    wrap.className = 'book-search';
+    wrap.innerHTML = '<i class="fas fa-magnifying-glass"></i>';
+    const input = document.createElement('input');
+    input.type = 'search';
+    input.placeholder = 'Pesquisar livro… (ex.: joao, sal)';
+    input.value = this._query;
+    input.setAttribute('aria-label', 'Pesquisar livro');
+    input.addEventListener('input', debounce(() => {
+      this._query = input.value;
+      if (this._query.trim()) this.renderSearch();
+      else this.renderBooks(this._lastTestament);
+    }, 120));
+    wrap.appendChild(input);
+    return wrap;
+  },
+
+  appendBookButtons(grid, books) {
+    for (const b of books) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      if (this.currentSlug && b.slug === this.currentSlug) btn.classList.add('current');
+      btn.innerHTML = '<span>' + escapeHtml(b.name) + '</span> ' +
+        '<span class="bk-meta"><small>' + b.chapters_count + '</small><i class="fas fa-chevron-right"></i></span>';
+      btn.onclick = () => this.renderChapters(b);
+      grid.appendChild(btn);
+    }
+  },
+
+  renderSearch() {
+    const grid = document.getElementById('book-grid');
+    const q = this.norm(this._query.trim());
+    grid.innerHTML = '';
+    grid.appendChild(this.buildSearch());
+    const all = this.books.flatMap((g) => g.books);
+    const hits = all.filter((b) =>
+      this.norm(b.name).includes(q) || this.norm(b.abbreviation).includes(q) || this.norm(b.slug).includes(q));
+    if (!hits.length) {
+      const empty = document.createElement('div');
+      empty.className = 'nav-label';
+      empty.style.margin = '1rem .1rem';
+      empty.textContent = 'Nenhum livro encontrado para “' + this._query.trim() + '”';
+      grid.appendChild(empty);
+      return;
+    }
+    this.appendBookButtons(grid, hits);
+  },
+
   renderBooks(testament) {
+    this._lastTestament = testament;
     const grid = document.getElementById('book-grid');
     document.querySelectorAll('.testament-tabs button').forEach((b) =>
       b.classList.toggle('active', b.dataset.testament === testament));
 
     const groups = this.books.filter((g) => g.testament === testament);
     grid.innerHTML = '';
+    grid.appendChild(this.buildSearch());
+
     for (const g of groups) {
       const label = document.createElement('div');
       label.className = 'nav-label';
@@ -166,26 +235,37 @@ const BookPicker = {
       label.textContent = g.group;
       grid.appendChild(label);
 
-      for (const b of g.books) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.innerHTML = '<span>' + escapeHtml(b.name) + '</span> <small>' + b.chapters_count + '</small>';
-        btn.onclick = () => this.renderChapters(b);
-        grid.appendChild(btn);
-      }
+      this.appendBookButtons(grid, g.books);
     }
   },
 
   renderChapters(book) {
     const grid = document.getElementById('book-grid');
-    grid.innerHTML = '<div class="nav-label" style="margin:.2rem .1rem .4rem">' +
-      escapeHtml(book.name) + ' — escolha o capítulo</div>' +
-      '<div class="chapter-grid" id="chapter-grid"></div>';
-    const cg = document.getElementById('chapter-grid');
+    grid.innerHTML = '';
+
+    // Voltar no TOPO: com listas de 150 capítulos, ficava escondido no fundo
+    const back = document.createElement('button');
+    back.className = 'btn btn-sm btn-ghost book-back';
+    back.innerHTML = '<i class="fas fa-arrow-left"></i> Todos os livros';
+    back.onclick = () => this.renderBooks(book.testament);
+    grid.appendChild(back);
+
+    const label = document.createElement('div');
+    label.className = 'nav-label';
+    label.style.margin = '.2rem .1rem .4rem';
+    label.textContent = book.name + ' — ' + book.chapters_count + ' capítulo(s): escolha o capítulo';
+    grid.appendChild(label);
+
+    const cg = document.createElement('div');
+    cg.className = 'chapter-grid';
     for (let c = 1; c <= book.chapters_count; c++) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = c;
+      if (this.currentSlug && book.slug === this.currentSlug && c === this.currentChapter) {
+        btn.classList.add('current');
+        btn.title = 'Capítulo actual';
+      }
       btn.onclick = () => {
         this.close();
         if (this.onPickChapter) {
@@ -203,12 +283,7 @@ const BookPicker = {
       };
       cg.appendChild(btn);
     }
-    const back = document.createElement('button');
-    back.className = 'btn btn-sm btn-ghost';
-    back.style.marginTop = '.8rem';
-    back.innerHTML = '<i class="fas fa-arrow-left"></i> Voltar aos livros';
-    back.onclick = () => this.renderBooks(book.testament);
-    grid.appendChild(back);
+    grid.appendChild(cg);
   },
 };
 
@@ -283,7 +358,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Modal de livros
   document.querySelectorAll('[data-open-books]').forEach((el) =>
-    el.addEventListener('click', (ev) => { ev.preventDefault(); BookPicker.open(window.onPickChapter || null); }));
+    el.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const ctx = window.bookPickerCurrent || {};
+      BookPicker.open(window.onPickChapter || null, ctx.slug || null, ctx.chapter || 0);
+    }));
   document.querySelector('#modal-books .modal-close')?.addEventListener('click', () => BookPicker.close());
   document.getElementById('modal-books')?.addEventListener('click', (e) => {
     if (e.target.id === 'modal-books') BookPicker.close();
@@ -291,8 +370,18 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.testament-tabs button').forEach((b) =>
     b.addEventListener('click', () => BookPicker.renderBooks(b.dataset.testament)));
 
+  // Qualquer modal fecha ao tocar fora (notas, livros, futuros modais do admin)
+  document.querySelectorAll('.modal-overlay').forEach((ov) =>
+    ov.addEventListener('click', (e) => {
+      if (e.target === ov) ov.classList.remove('open');
+    }));
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { BookPicker.close(); closeSidebar(); }
+    if (e.key === 'Escape') {
+      BookPicker.close();
+      closeSidebar();
+      document.querySelectorAll('.modal-overlay.open').forEach((ov) => ov.classList.remove('open'));
+    }
   });
 
   // Favoritos carregados se existir leitor nesta página

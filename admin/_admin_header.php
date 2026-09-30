@@ -13,11 +13,15 @@ $pageTitle = ($pageTitle ?? 'Administração') . ' — Admin';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($pageTitle) ?></title>
+<link rel="icon" href="<?= url('assets/img/favicon.svg') ?>" type="image/svg+xml">
+<link rel="alternate icon" href="<?= url('assets/img/favicon.ico') ?>" sizes="any">
+<link rel="apple-touch-icon" href="<?= url('assets/img/icon-180.png') ?>">
+<meta name="theme-color" content="#e67e22">
 <?php $faUrl = fontawesome_url(); ?>
 <?php if ($faUrl): ?><link rel="stylesheet" href="<?= $faUrl ?>">
 <?php else: ?><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.1.0/css/all.min.css">
 <?php endif; ?>
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
+<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=<?= filemtime(dirname(__DIR__) . '/assets/css/style.css') ?>">
 </head>
 <body>
 

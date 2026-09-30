@@ -2,7 +2,8 @@
 /**
  * Comparar traduções — ?book=joao&chapter=3&translations[]=ARC&translations[]=NVI
  */
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/bootstrap.php';
+boot_session();
 
 $bookSlug = trim((string) ($_GET['book'] ?? 'joao'));
 $chapNum  = max(1, (int) ($_GET['chapter'] ?? 3));
@@ -13,9 +14,21 @@ if (count($selTrans) > 4) $selTrans = array_slice($selTrans, 0, 4);
 
 $layout = ($_GET['layout'] ?? 'grid') === 'table' ? 'table' : 'grid';
 
+$book = db_one('SELECT * FROM books WHERE slug = ?', [$bookSlug]);
+
+// Título + Open Graph específicos da comparação (antes do header)
+$pageTitle = $book ? 'Comparar ' . $book['name'] . ' ' . $chapNum : 'Comparar traduções';
+$ogTitle   = $pageTitle;
+$ogDesc    = $book
+    ? 'Compare ' . $book['name'] . ' ' . $chapNum . ' lado a lado em até 4 traduções.'
+    : 'Compare capítulos da Bíblia em várias traduções, lado a lado ou em tabela.';
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$ogUrl  = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . ($_SERVER['REQUEST_URI'] ?? '/');
+
+require_once __DIR__ . '/includes/header.php';
+
 $translations = db_all('SELECT id, name, abbreviation FROM translations WHERE status = "active" ORDER BY name');
 $books = db_all('SELECT id, name, slug, chapters_count FROM books ORDER BY book_order');
-$book = db_one('SELECT * FROM books WHERE slug = ?', [$bookSlug]);
 $chapterRow = $book ? db_one('SELECT id FROM chapters WHERE book_id = ? AND chapter_number = ?', [$book['id'], $chapNum]) : null;
 
 // Buscar versículos por tradução

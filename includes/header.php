@@ -16,12 +16,44 @@ $activeAbbr = $_GET['translation'] ?? ($_COOKIE['bw_translation'] ?? DEFAULT_TRA
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<?php if (!empty($noindex)): ?><meta name="robots" content="noindex"><?php endif; ?>
 <title><?= e($pageTitle) ?> — <?= e(APP_NAME) ?></title>
+<link rel="icon" href="<?= url('assets/img/favicon.svg') ?>" type="image/svg+xml">
+<link rel="alternate icon" href="<?= url('assets/img/favicon.ico') ?>" sizes="any">
+<link rel="apple-touch-icon" href="<?= url('assets/img/icon-180.png') ?>">
+<link rel="manifest" href="<?= url('site.webmanifest') ?>">
+<meta name="theme-color" content="#6d4df6">
+<?php
+// Open Graph — prévias no WhatsApp/Telegram/Facebook. As páginas podem definir
+// $ogTitle, $ogDesc e $ogUrl antes de incluir o header (ex.: leitura.php);
+// por omissão usa-se o título da página e a descrição genérica.
+$ogTitle = $ogTitle ?? ($pageTitle !== APP_NAME ? $pageTitle : APP_NAME);
+$ogDesc  = $ogDesc  ?? 'Leia, pesquise e compare traduções da Bíblia. Favoritos, notas e histórico.';
+if (!isset($ogUrl)) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $ogUrl  = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . ($_SERVER['REQUEST_URI'] ?? '/');
+}
+$ogImage = url('assets/img/og.png');
+?>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="<?= e(APP_NAME) ?>">
+<meta property="og:title" content="<?= e($ogTitle) ?>">
+<meta property="og:description" content="<?= e($ogDesc) ?>">
+<meta property="og:url" content="<?= e($ogUrl) ?>">
+<meta property="og:image" content="<?= e($ogImage) ?>">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<?= e(APP_NAME) ?> — capa da aplicação">
+<meta property="og:locale" content="pt_PT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<?= e($ogTitle) ?>">
+<meta name="twitter:description" content="<?= e($ogDesc) ?>">
+<meta name="twitter:image" content="<?= e($ogImage) ?>">
 <?php $faUrl = fontawesome_url(); ?>
 <?php if ($faUrl): ?><link rel="stylesheet" href="<?= $faUrl ?>">
 <?php else: ?><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.1.0/css/all.min.css">
 <?php endif; ?>
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
+<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=<?= filemtime(__DIR__ . '/../assets/css/style.css') ?>">
 </head>
 <body class="<?= e($bodyClass) ?>">
 
@@ -33,7 +65,7 @@ $activeAbbr = $_GET['translation'] ?? ($_COOKIE['bw_translation'] ?? DEFAULT_TRA
   </a>
   <div class="spacer"></div>
 
-  <form action="<?= url('/pesquisa.php') ?>" method="get" class="topbar-search" style="display:flex;gap:.4rem;max-width:340px;flex:1">
+  <form action="<?= url('/pesquisa.php') ?>" method="get" class="topbar-search">
     <input type="search" name="q" placeholder="Pesquisar…" aria-label="Pesquisar"
            value="<?= e($_GET['q'] ?? '') ?>" style="padding:.4rem .7rem">
   </form>
