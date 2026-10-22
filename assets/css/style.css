@@ -1666,3 +1666,18 @@ body.reading-mode .reading-exit {
 .app-auth .main { min-height:calc(100vh - var(--topbar-h)); display:grid; align-items:center; padding-top:calc(var(--topbar-h) + 1.5rem); }
 .app-auth .auth-wrap { width:100%; }
 @media(max-width:640px){.app-auth .brand-name{display:inline}.app-auth .auth-back span{display:none}.app-auth .auth-shell{max-width:480px;margin:auto}.app-auth .auth-panel{background:var(--surface)}}
+
+.reader-settings { position:relative; }
+.reader-settings summary { list-style:none; }
+.reader-settings summary::-webkit-details-marker { display:none; }
+.reader-settings[open] summary { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+.reader-settings-panel { position:absolute; z-index:80; top:calc(100% + .55rem); right:0; width:310px; padding:1rem; border:1px solid var(--border); border-radius:16px; background:var(--surface); box-shadow:var(--shadow); }
+.reader-setting-head { margin-bottom:.8rem; }.reader-setting-head strong,.reader-setting-head small { display:block; }.reader-setting-head small { margin-top:.15rem; color:var(--text-faint); font-size:.7rem; }
+.reader-setting-row { display:flex; align-items:center; justify-content:space-between; padding:.7rem 0; border-top:1px solid var(--border); }
+.reader-setting-row>span,.reader-setting-block>span { color:var(--text-soft); font-size:.76rem; font-weight:700; }
+.reader-setting-row>div { display:flex; align-items:center; gap:.3rem; }.reader-setting-row button { width:32px; height:32px; border:1px solid var(--border); border-radius:50%; background:var(--surface-2); color:var(--text); cursor:pointer; }.reader-setting-row output { min-width:44px; text-align:center; font-size:.75rem; font-weight:800; }
+.reader-setting-block { padding:.65rem 0; border-top:1px solid var(--border); }
+.reader-option-group { display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:.25rem; margin-top:.4rem; padding:.2rem; border-radius:10px; background:var(--surface-2); }
+.reader-option-group button { padding:.45rem .35rem; border:0; border-radius:8px; background:transparent; color:var(--text-soft); font:inherit; font-size:.7rem; cursor:pointer; }.reader-option-group button.active { background:var(--surface); color:var(--accent); font-weight:800; box-shadow:0 1px 3px rgba(44,48,45,.08); }
+.reader-theme-choice { display:flex; align-items:center; gap:.6rem; width:100%; margin-top:.25rem; padding:.65rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--text); font:inherit; font-size:.76rem; font-weight:700; cursor:pointer; }.reader-theme-choice i { color:var(--accent); }
+@media(max-width:640px){.reader-settings{position:static}.reader-settings-panel{position:fixed;top:auto;left:.7rem;right:.7rem;bottom:calc(4.8rem + env(safe-area-inset-bottom));width:auto}.reader-controls{position:sticky}.reader-settings summary span{display:none}}

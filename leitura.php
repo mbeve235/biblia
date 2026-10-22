@@ -134,15 +134,19 @@ if ($user = current_user()) {
     <span><strong><?= e($book['name']) ?> <?= $chapNum ?></strong><small>Livro e capítulo</small></span>
     <i class="fas fa-chevron-down"></i>
   </button>
-  <div class="reader-control-group" aria-label="Tamanho do texto">
-    <button class="btn btn-sm" data-font-dec type="button" title="Diminuir letra" aria-label="Diminuir letra"><i class="fas fa-minus"></i></button>
-    <span class="reader-size-label" aria-hidden="true">Texto</span>
-    <button class="btn btn-sm" data-font-inc type="button" title="Aumentar letra" aria-label="Aumentar letra"><i class="fas fa-plus"></i></button>
-  </div>
-  <button class="btn btn-sm" data-theme-toggle type="button" title="Alternar tema"><i class="fas fa-moon"></i><span>Tema</span></button>
   <button class="btn btn-sm" id="verse-select-toggle" type="button" aria-pressed="false"><i class="fas fa-list-check"></i><span>Seleccionar</span></button>
   <button class="btn btn-sm" id="reader-audio-toggle" type="button" aria-pressed="false" title="Ouvir este capítulo"><i class="fas fa-volume-high"></i><span>Ouvir</span></button>
   <a class="btn btn-sm" href="<?= url('/comparar.php?book=' . $book['slug'] . '&chapter=' . $chapNum) ?>" title="Comparar traduções"><i class="fas fa-table-columns"></i><span>Comparar</span></a>
+  <details class="reader-settings">
+    <summary class="btn btn-sm"><i class="fas fa-font"></i><span>Aparência</span></summary>
+    <div class="reader-settings-panel">
+      <div class="reader-setting-head"><strong>Aparência da leitura</strong><small>As escolhas ficam guardadas neste dispositivo.</small></div>
+      <div class="reader-setting-row"><span>Tamanho</span><div><button type="button" data-font-dec aria-label="Diminuir letra"><i class="fas fa-minus"></i></button><output id="font-size-label">17px</output><button type="button" data-font-inc aria-label="Aumentar letra"><i class="fas fa-plus"></i></button></div></div>
+      <div class="reader-setting-block"><span>Tipo de letra</span><div class="reader-option-group"><button type="button" data-reader-font="serif">Clássica</button><button type="button" data-reader-font="sans">Moderna</button></div></div>
+      <div class="reader-setting-block"><span>Espaçamento</span><div class="reader-option-group"><button type="button" data-reader-line="1.7">Compacto</button><button type="button" data-reader-line="1.9">Confortável</button><button type="button" data-reader-line="2.1">Amplo</button></div></div>
+      <button class="reader-theme-choice" data-theme-toggle type="button"><i class="fas fa-moon"></i><span>Alternar tema claro/escuro</span></button>
+    </div>
+  </details>
   <button class="btn btn-sm" id="reading-focus-toggle" type="button" title="Modo de leitura focada" aria-pressed="false"><i class="fas fa-glasses"></i><span>Foco</span></button>
   <button class="btn btn-sm reading-exit" type="button" id="reading-focus-exit"><i class="fas fa-xmark"></i> Sair do modo leitura</button>
 </div>
@@ -261,6 +265,24 @@ const selectionBar = document.getElementById('verse-selection-bar');
 const selectionCount = document.getElementById('verse-selection-count');
 const verseElements = [...document.querySelectorAll('.verse')];
 let selectionMode = false;
+
+// ---- Aparência local do leitor ----
+const readerRoot = document.documentElement;
+const savedReaderFont = localStorage.getItem('bw_reader_font') || 'serif';
+const savedReaderLine = localStorage.getItem('bw_reader_line') || '1.9';
+function applyReaderFont(value) {
+  readerRoot.style.setProperty('--read-font', value === 'sans' ? "system-ui, -apple-system, 'Segoe UI', sans-serif" : "Georgia, 'Times New Roman', serif");
+  localStorage.setItem('bw_reader_font', value);
+  document.querySelectorAll('[data-reader-font]').forEach(button => button.classList.toggle('active', button.dataset.readerFont === value));
+}
+function applyReaderLine(value) {
+  readerRoot.style.setProperty('--read-line', value);
+  localStorage.setItem('bw_reader_line', value);
+  document.querySelectorAll('[data-reader-line]').forEach(button => button.classList.toggle('active', button.dataset.readerLine === value));
+}
+document.querySelectorAll('[data-reader-font]').forEach(button => button.addEventListener('click', () => applyReaderFont(button.dataset.readerFont)));
+document.querySelectorAll('[data-reader-line]').forEach(button => button.addEventListener('click', () => applyReaderLine(button.dataset.readerLine)));
+applyReaderFont(savedReaderFont); applyReaderLine(savedReaderLine);
 
 function selectedVerses() { return verseElements.filter((verse) => verse.classList.contains('selected')); }
 function selectionText() {
