@@ -34,6 +34,16 @@ $groups = db_all('SELECT * FROM book_groups ORDER BY testament, group_order');
 $books  = db_all('SELECT * FROM books ORDER BY book_order');
 $byGroup = [];
 foreach ($books as $b) $byGroup[(int) $b['group_id']][] = $b;
+$recentLibrary = [];
+if ($currentUser && !$selectedBook) {
+    $recentLibrary = db_all(
+        'SELECT b.name, b.slug, h.chapter_number, t.abbreviation AS translation, MAX(h.read_at) AS read_at
+         FROM reading_history h JOIN books b ON b.id=h.book_id JOIN translations t ON t.id=h.translation_id
+         WHERE h.user_id=? GROUP BY b.id,b.name,b.slug,h.chapter_number,t.abbreviation
+         ORDER BY read_at DESC LIMIT 4',
+        [$currentUser['id']]
+    );
+}
 
 // Modo: capítulos de um livro (livro já resolvido antes do header, para o OG)
 $chaptersWithVerses = [];
@@ -71,14 +81,28 @@ if ($selectedBook && $trans) {
   <p class="page-back"><a href="<?= url('/biblia.php') ?>"><i class="fas fa-arrow-left"></i> Voltar aos livros</a></p>
 
 <?php else: ?>
-  <header class="page-header">
+  <header class="page-header library-heading">
     <span class="page-kicker">Bíblia</span>
     <div class="page-title-row"><span class="page-icon"><i class="fas fa-book-bible"></i></span><div><h1>Escolha um livro</h1><p>66 livros · tradução <strong><?= e($trans['abbreviation'] ?? '—') ?></strong> · <?= e($trans['name'] ?? '') ?></p></div></div>
   </header>
 
+  <?php if ($recentLibrary): ?>
+  <section class="library-recent" aria-labelledby="recent-library-title">
+    <div class="library-section-title"><div><span>Continuar</span><h2 id="recent-library-title">Leituras recentes</h2></div><a href="<?= url('/historico.php') ?>">Ver histórico</a></div>
+    <div class="library-recent-grid"><?php foreach ($recentLibrary as $recent): ?>
+      <a href="<?= url('/leitura.php?translation='.urlencode($recent['translation']).'&book='.urlencode($recent['slug']).'&chapter='.(int)$recent['chapter_number']) ?>"><span><small><?= e($recent['translation']) ?></small><strong><?= e($recent['name']) ?> <?= (int)$recent['chapter_number'] ?></strong></span><i class="fas fa-arrow-right"></i></a>
+    <?php endforeach; ?></div>
+  </section>
+  <?php endif; ?>
+
+  <div class="library-toolbar">
+    <label class="library-search"><i class="fas fa-magnifying-glass"></i><input type="search" id="library-search" placeholder="Procurar um livro…" autocomplete="off"><span class="sr-only">Procurar livro</span></label>
+    <div class="library-tabs" role="group" aria-label="Filtrar por testamento"><button class="active" type="button" data-library-testament="all">Todos</button><button type="button" data-library-testament="AT">Antigo</button><button type="button" data-library-testament="NT">Novo</button></div>
+  </div>
+
   <?php foreach (['AT', 'NT'] as $test): ?>
     <?php $testGroups = array_filter($groups, fn($g) => $g['testament'] === $test); ?>
-    <section class="card">
+    <section class="card library-testament" data-testament="<?= $test ?>">
       <div class="card-head">
         <h2>
           <span class="test-mark <?= $test === 'AT' ? 'at' : 'nt' ?>"><?= brand_svg('', 14) ?></span>
@@ -89,7 +113,7 @@ if ($selectedBook && $trans) {
         <div class="section-label"><?= e($g['name']) ?></div>
         <div class="book-grid">
           <?php foreach ($byGroup[(int) $g['id']] ?? [] as $b): ?>
-            <a class="book-card" href="<?= url('/biblia.php?book=' . $b['slug'] . '&translation=' . urlencode($trans['abbreviation'] ?? '')) ?>">
+            <a class="book-card" data-book-name="<?= e(mb_strtolower($b['name'])) ?>" href="<?= url('/biblia.php?book=' . $b['slug'] . '&translation=' . urlencode($trans['abbreviation'] ?? '')) ?>">
               <span class="bk-name"><span class="bk-badge"><?= brand_svg('', 12) ?></span><?= e($b['name']) ?></span>
               <span class="bk-meta"><small><?= (int) $b['chapters_count'] ?></small><i class="fas fa-chevron-right"></i></span>
             </a>
@@ -100,4 +124,20 @@ if ($selectedBook && $trans) {
   <?php endforeach; ?>
 <?php endif; ?>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php if (!$selectedBook) { ob_start(); ?>
+<script>
+const librarySearch=document.getElementById('library-search');
+const libraryButtons=[...document.querySelectorAll('[data-library-testament]')];
+let libraryTestament='all';
+function filterLibrary(){
+  const query=(librarySearch?.value||'').trim().toLocaleLowerCase('pt');
+  document.querySelectorAll('.library-testament').forEach(section=>{
+    let visible=0;
+    section.querySelectorAll('.book-card').forEach(book=>{const show=(!query||book.dataset.bookName.includes(query))&&(libraryTestament==='all'||section.dataset.testament===libraryTestament);book.hidden=!show;if(show)visible++;});
+    section.hidden=visible===0;
+  });
+}
+librarySearch?.addEventListener('input',filterLibrary);
+libraryButtons.forEach(button=>button.addEventListener('click',()=>{libraryTestament=button.dataset.libraryTestament;libraryButtons.forEach(item=>item.classList.toggle('active',item===button));filterLibrary();}));
+</script>
+<?php $pageScripts=ob_get_clean(); } require_once __DIR__ . '/includes/footer.php'; ?>
