@@ -198,6 +198,16 @@ if ($user = current_user()) {
   <?php endif; ?>
 </nav>
 
+<div class="reader-end-switch">
+  <div>
+    <small>Terminou este capítulo?</small>
+    <strong>Continue noutro livro ou capítulo</strong>
+  </div>
+  <a href="#" class="btn btn-primary" data-open-books aria-haspopup="dialog">
+    <i class="fas fa-book-open"></i> Escolher livro ou capítulo
+  </a>
+</div>
+
 <?php endif; ?>
 
 <?php

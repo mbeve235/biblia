@@ -511,6 +511,10 @@ table.table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .chapter-nav {
   display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem;
 }
+.reader-end-switch { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border)); border-radius: 14px; background: linear-gradient(135deg, var(--surface), var(--accent-soft)); }
+.reader-end-switch > div { display: grid; gap: .1rem; }
+.reader-end-switch small { color: var(--text-faint); font-size: .72rem; }
+.reader-end-switch strong { font-size: .92rem; }
 
 /* Modal selector de livros */
 .modal-overlay {
@@ -1351,6 +1355,8 @@ input:disabled, select:disabled, textarea:disabled {
 
   /* Navegação prev/next: botões podem quebrar em duas linhas */
   .chapter-nav .btn { white-space: normal; text-align: left; padding: .5rem .7rem; }
+  .reader-end-switch { align-items: stretch; flex-direction: column; }
+  .reader-end-switch .btn { width: 100%; justify-content: center; }
 
   /* Modal de livros/capítulos em folga quase total */
   .modal-overlay { padding: 3.4rem .55rem 1rem; align-items: stretch; }
@@ -1457,7 +1463,7 @@ body.reading-mode .reading-exit {
 
 /* Impressão */
 @media print {
-  .topbar, .sidebar, .bottom-nav, .reader-controls, .chapter-nav, .vtools, .reading-exit { display: none !important; }
+  .topbar, .sidebar, .bottom-nav, .reader-controls, .chapter-nav, .reader-end-switch, .vtools, .reading-exit { display: none !important; }
   .main { margin: 0; }
   body { background: #fff; color: #000; }
 }
