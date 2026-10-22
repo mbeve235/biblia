@@ -148,8 +148,8 @@ if ($user = current_user()) {
     </div>
   </details>
   <button class="btn btn-sm" id="reading-focus-toggle" type="button" title="Modo de leitura focada" aria-pressed="false"><i class="fas fa-glasses"></i><span>Foco</span></button>
-  <button class="btn btn-sm reading-exit" type="button" id="reading-focus-exit"><i class="fas fa-xmark"></i> Sair do modo leitura</button>
 </div>
+<button class="btn btn-sm reading-exit" type="button" id="reading-focus-exit"><i class="fas fa-xmark"></i> Sair do modo focado</button>
 
 <article class="verses" id="verses">
   <?php if (!$verses): ?>
@@ -349,6 +349,9 @@ function setReadingFocus(enabled) {
 }
 focusToggle?.addEventListener('click', () => setReadingFocus(!document.body.classList.contains('reading-mode')));
 document.getElementById('reading-focus-exit')?.addEventListener('click', () => setReadingFocus(false));
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && document.body.classList.contains('reading-mode')) setReadingFocus(false);
+});
 
 // ---- Progresso da leitura no capítulo ----
 const scrollProgress = document.querySelector('#reader-scroll-progress span');
