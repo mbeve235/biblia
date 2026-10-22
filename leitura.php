@@ -134,6 +134,17 @@ if ($user = current_user()) {
     <span><strong><?= e($book['name']) ?> <?= $chapNum ?></strong><small>Livro e capítulo</small></span>
     <i class="fas fa-chevron-down"></i>
   </button>
+  <form method="get" class="reader-version-picker" aria-label="Mudar tradução">
+    <input type="hidden" name="book" value="<?= e($book['slug']) ?>">
+    <input type="hidden" name="chapter" value="<?= $chapNum ?>">
+    <?php if (isset($_GET['verse'])): ?><input type="hidden" name="verse" value="<?= (int) $_GET['verse'] ?>"><?php endif; ?>
+    <i class="fas fa-language" aria-hidden="true"></i>
+    <select name="translation" aria-label="Tradução da Bíblia" onchange="this.form.submit()">
+      <?php foreach ($translations as $translationOption): ?>
+        <option value="<?= e($translationOption['abbreviation']) ?>" <?= $translationOption['abbreviation'] === $abbr ? 'selected' : '' ?>><?= e($translationOption['abbreviation']) ?> — <?= e($translationOption['name']) ?></option>
+      <?php endforeach; ?>
+    </select>
+  </form>
   <button class="btn btn-sm" id="verse-select-toggle" type="button" aria-pressed="false"><i class="fas fa-list-check"></i><span>Seleccionar</span></button>
   <button class="btn btn-sm" id="reader-audio-toggle" type="button" aria-pressed="false" title="Ouvir este capítulo"><i class="fas fa-volume-high"></i><span>Ouvir</span></button>
   <a class="btn btn-sm" href="<?= url('/comparar.php?book=' . $book['slug'] . '&chapter=' . $chapNum) ?>" title="Comparar traduções"><i class="fas fa-table-columns"></i><span>Comparar</span></a>

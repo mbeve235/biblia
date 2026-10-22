@@ -1692,3 +1692,8 @@ body.reading-mode .main.reading { width:min(720px,calc(100% - 2rem)); max-width:
 body.reading-mode .verses { padding-bottom:1rem; }
 body.reading-mode .reading-exit { position:fixed; z-index:150; top:1rem; right:1rem; display:inline-flex !important; border:1px solid var(--border); border-radius:999px; background:color-mix(in srgb,var(--surface) 94%,transparent); box-shadow:var(--shadow); backdrop-filter:blur(12px); }
 @media(max-width:640px){body.reading-mode .main.reading{width:calc(100% - 1.5rem);padding:3.4rem 0 1.5rem}body.reading-mode .reading-exit{top:max(.65rem,env(safe-area-inset-top));right:.65rem;padding:.45rem .7rem}body.reading-mode .verse{padding-inline:.15rem}}
+
+.reader-version-picker { position:relative; flex:0 0 auto; }
+.reader-version-picker>i { position:absolute; z-index:1; left:.65rem; top:50%; transform:translateY(-50%); color:var(--accent); pointer-events:none; }
+.reader-version-picker select { width:auto; max-width:165px; min-height:34px; padding:.35rem 1.7rem .35rem 1.95rem; border-radius:9px; background:var(--surface); font-size:.78rem; font-weight:750; cursor:pointer; }
+@media(max-width:640px){.reader-version-picker select{max-width:88px;padding-right:1.25rem}.reader-version-picker>i{display:none}.reader-version-picker select{padding-left:.55rem}}
