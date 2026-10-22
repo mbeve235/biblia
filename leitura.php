@@ -337,7 +337,9 @@ let portugueseVoice = null;
 function loadPortugueseVoice() {
   if (!('speechSynthesis' in window)) return null;
   const voices = window.speechSynthesis.getVoices();
-  portugueseVoice = voices.find((voice) => /^pt-PT$/i.test(voice.lang))
+  portugueseVoice = voices.find((voice) => voice.localService && /^pt-PT$/i.test(voice.lang))
+    || voices.find((voice) => voice.localService && /^pt(-|_)/i.test(voice.lang))
+    || voices.find((voice) => /^pt-PT$/i.test(voice.lang))
     || voices.find((voice) => /^pt(-|_)/i.test(voice.lang))
     || voices.find((voice) => /portugu/i.test(voice.name))
     || null;
@@ -357,7 +359,7 @@ function stopChapterAudio() {
   audioToggle?.setAttribute('aria-pressed', 'false');
   if (audioToggle) audioToggle.innerHTML = '<i class="fas fa-volume-high"></i><span>Ouvir</span>';
 }
-function speakNextVerse() {
+function speakNextVerse(useDefaultVoice = false) {
   if (!audioActive || audioIndex >= verseElements.length) return stopChapterAudio();
   const verse = verseElements[audioIndex++];
   verseElements.forEach((item) => item.classList.remove('verse-speaking'));
@@ -366,8 +368,8 @@ function speakNextVerse() {
   const copy = verse.cloneNode(true);
   copy.querySelectorAll('.vtools,.verse-select-indicator,.note-indicator').forEach((node) => node.remove());
   audioUtterance = new SpeechSynthesisUtterance(copy.textContent.trim());
-  audioUtterance.lang = portugueseVoice?.lang || 'pt-PT';
-  if (portugueseVoice) audioUtterance.voice = portugueseVoice;
+  audioUtterance.lang = useDefaultVoice ? (navigator.language || 'pt-PT') : (portugueseVoice?.lang || 'pt-PT');
+  if (portugueseVoice && !useDefaultVoice) audioUtterance.voice = portugueseVoice;
   audioUtterance.rate = .92;
   audioUtterance.pitch = 1;
   audioUtterance.onend = () => {
@@ -376,6 +378,16 @@ function speakNextVerse() {
   };
   audioUtterance.onerror = (event) => {
     const expected = event.error === 'canceled' || event.error === 'interrupted';
+    // Algumas vozes remotas aparecem na lista, mas devolvem synthesis-failed.
+    // Nesse caso, repetir exactamente o mesmo versículo com a voz padrão local.
+    if (audioActive && event.error === 'synthesis-failed' && !useDefaultVoice) {
+      audioUtterance = null;
+      audioIndex--;
+      portugueseVoice = null;
+      window.speechSynthesis.cancel();
+      window.setTimeout(() => speakNextVerse(true), 120);
+      return;
+    }
     stopChapterAudio();
     if (!expected) toast('Não foi possível iniciar a voz (' + (event.error || 'erro do dispositivo') + '). Verifique o volume e as definições de voz.', 'error', 6000);
   };
