@@ -128,7 +128,7 @@ if ($user) {
 <?php if ($user && $personalStats): ?>
 <div class="home-personal-stats" aria-label="Resumo da sua conta">
   <a href="<?= url('/historico.php') ?>"><i class="fas fa-fire"></i><strong><?= $readingStreak ?></strong><span><?= $readingStreak === 1 ? 'dia seguido' : 'dias seguidos' ?></span></a>
-  <a href="<?= url('/favoritos.php') ?>"><i class="fas fa-star"></i><strong><?= (int) $personalStats['favorites'] ?></strong><span>Favoritos</span></a>
+  <a href="<?= url('/favoritos.php') ?>"><i class="fas fa-bookmark"></i><strong><?= (int) $personalStats['favorites'] ?></strong><span>Guardados</span></a>
   <a href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i><strong><?= (int) $personalStats['notes'] ?></strong><span>Notas</span></a>
   <a href="<?= url('/ministracoes.php') ?>"><i class="fas fa-dove"></i><strong><?= (int) $personalStats['ministracoes'] ?></strong><span>Ministrações</span></a>
 </div>
@@ -225,7 +225,7 @@ $votdUrl = $votd
 
   <?php if ($favVerses): ?>
   <section class="card home-list-card">
-    <div class="home-section-head compact"><div><span>Guardados</span><h2>Favoritos recentes</h2></div><a href="<?= url('/favoritos.php') ?>">Ver tudo</a></div>
+    <div class="home-section-head compact"><div><span>Guardados</span><h2>Versículos recentes</h2></div><a href="<?= url('/favoritos.php') ?>">Ver tudo</a></div>
     <div class="home-favorites-list">
       <?php foreach ($favVerses as $fv): ?>
         <a href="<?= url('/leitura.php?translation=' . urlencode($fv['translation']) . '&book=' . urlencode($fv['slug']) . '&chapter=' . (int) $fv['chapter_number']) . '#v' . (int) $fv['verse_number'] ?>">

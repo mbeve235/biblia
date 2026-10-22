@@ -42,7 +42,7 @@ require_once __DIR__ . '/includes/header.php';
     <aside class="auth-aside auth-aside-register">
       <a class="brand" href="<?= url('/index.php') ?>"><span class="logo"><?= brand_svg() ?></span><span><?= e(APP_NAME) ?></span></a>
       <div class="auth-aside-copy"><span class="auth-kicker">Comece hoje</span><h1>Construa o seu espaço de estudo.</h1><p>Guarde versículos, escreva notas e acompanhe a sua jornada de leitura.</p></div>
-      <ul class="auth-benefits"><li><i class="fas fa-check"></i> Favoritos sincronizados</li><li><i class="fas fa-check"></i> Notas e ministrações pessoais</li><li><i class="fas fa-check"></i> Histórico de leitura</li></ul>
+      <ul class="auth-benefits"><li><i class="fas fa-check"></i> Versículos guardados e sincronizados</li><li><i class="fas fa-check"></i> Notas e ministrações pessoais</li><li><i class="fas fa-check"></i> Histórico de leitura</li></ul>
     </aside>
 
     <section class="card auth-panel">

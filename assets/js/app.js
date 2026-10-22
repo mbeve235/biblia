@@ -349,18 +349,18 @@ const VerseActions = {
 
   async toggleFavorite(verseId, btn) {
     if (!IS_LOGGED_IN) {
-      toast('Inicie sessão para guardar favoritos.', 'error');
+      toast('Inicie sessão para guardar versículos.', 'error');
       return;
     }
     try {
       if (this.isFav(verseId)) {
         await api('DELETE', '/favorites/' + verseId);
         this.favorites.delete(verseId);
-        toast('Removido dos favoritos.');
+        toast('Versículo removido dos guardados.');
       } else {
         await api('POST', '/favorites', { verse_id: verseId });
         this.favorites.add(verseId);
-        toast('Adicionado aos favoritos.', 'success');
+        toast('Versículo guardado.', 'success');
       }
       if (btn) btn.classList.toggle('on', this.isFav(verseId));
     } catch (e) {

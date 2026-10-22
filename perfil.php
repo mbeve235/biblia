@@ -132,8 +132,8 @@ require_once __DIR__ . '/includes/header.php';
   <section class="card settings-card">
     <div class="settings-card-head"><span><i class="fas fa-chart-simple"></i></span><div><h3>Actividade</h3><p>Resumo do conteúdo que guardou.</p></div></div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="icon"><i class="fas fa-star"></i></div>
-        <div><div class="value"><?= fmt_num($favCount) ?></div><div class="label">Favoritos</div></div></div>
+      <div class="stat-card"><div class="icon"><i class="fas fa-bookmark"></i></div>
+        <div><div class="value"><?= fmt_num($favCount) ?></div><div class="label">Versículos guardados</div></div></div>
       <div class="stat-card"><div class="icon"><i class="fas fa-pen-to-square"></i></div>
         <div><div class="value"><?= fmt_num($noteCount) ?></div><div class="label">Notas</div></div></div>
     </div>

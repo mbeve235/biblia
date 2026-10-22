@@ -40,7 +40,7 @@ $favs = db_all(
 <?php else: ?>
   <div class="personal-filter">
     <i class="fas fa-magnifying-glass"></i>
-    <input type="search" id="favorites-filter" placeholder="Filtrar por livro, referência ou texto…" aria-label="Filtrar favoritos">
+    <input type="search" id="favorites-filter" placeholder="Filtrar por livro, referência ou texto…" aria-label="Filtrar versículos guardados">
     <span id="favorites-filter-count"><?= count($favs) ?> visíveis</span>
   </div>
   <?php foreach ($favs as $f): ?>
@@ -84,10 +84,10 @@ favoriteFilter?.addEventListener('input', () => {
   document.getElementById('favorites-filter-count').textContent = visible + ' visíveis';
 });
 async function bwRemoveFav(verseId, btn) {
-  if (!confirm('Remover este versículo dos favoritos?')) return;
+  if (!confirm('Remover este versículo dos guardados?')) return;
   try {
     await api('DELETE', '/favorites/' + verseId);
-    toast('Removido dos favoritos.');
+    toast('Versículo removido dos guardados.');
     btn.closest('.card').remove();
   } catch (e) { toast(e.message, 'error'); }
 }

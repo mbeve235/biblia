@@ -29,7 +29,7 @@ require_once __DIR__ . '/includes/header.php';
       <div class="auth-aside-copy">
         <span class="auth-kicker">A sua jornada continua</span>
         <h1>Volte à Palavra de onde parou.</h1>
-        <p>Os seus favoritos, notas, ministrações e histórico ficam guardados num só lugar.</p>
+        <p>Os seus versículos, notas, ministrações e histórico ficam guardados num só lugar.</p>
       </div>
       <div class="auth-quote"><i class="fas fa-quote-left"></i><span>“Lâmpada para os meus pés é a tua palavra.”</span><small>Salmos 119:105</small></div>
     </aside>

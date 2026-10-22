@@ -170,7 +170,7 @@ if ($user = current_user()) {
         <?= e($v['text']) ?>
         <?php if ($hasNote): ?><i class="fas fa-pen-to-square note-indicator" title="Este versículo tem uma nota"></i><?php endif; ?>
         <span class="vtools">
-          <button type="button" class="act-fav <?= $isFav ? 'on' : '' ?>" title="Favorito" onclick="bwToggleFav(this, <?= $vid ?>)"><i class="fas fa-star"></i></button>
+          <button type="button" class="act-fav <?= $isFav ? 'on' : '' ?>" title="Guardar versículo" aria-label="Guardar versículo" onclick="bwToggleFav(this, <?= $vid ?>)"><i class="fas fa-bookmark"></i></button>
           <button type="button" title="Nota" onclick="bwOpenNote(<?= $vid ?>, <?= (int) $v['verse_number'] ?>)"><i class="fas fa-pen-to-square"></i></button>
           <button type="button" title="Copiar" onclick="bwCopyVerse(<?= (int) $v['verse_number'] ?>, this)"><i class="fas fa-copy"></i></button>
           <button type="button" title="Partilhar" onclick="bwShareVerse(<?= (int) $v['verse_number'] ?>, this)"><i class="fas fa-share-nodes"></i></button>
