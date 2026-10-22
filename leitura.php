@@ -191,22 +191,15 @@ if ($user = current_user()) {
       <i class="fas fa-arrow-left"></i> <?= e($prevLink['name']) ?> <?= $prevLink['ch'] ?>
     </a>
   <?php else: ?><span></span><?php endif; ?>
+  <a href="#" class="btn chapter-book-switch" data-open-books aria-haspopup="dialog" aria-label="Escolher outro livro ou capítulo">
+    <i class="fas fa-book-open"></i> <span>Livros</span>
+  </a>
   <?php if ($nextLink): ?>
     <a class="btn" href="<?= url('/leitura.php?translation=' . urlencode($abbr) . '&book=' . $nextLink['slug'] . '&chapter=' . $nextLink['ch']) ?>">
       <?= e($nextLink['name']) ?> <?= $nextLink['ch'] ?> <i class="fas fa-arrow-right"></i>
     </a>
-  <?php endif; ?>
+  <?php else: ?><span></span><?php endif; ?>
 </nav>
-
-<div class="reader-end-switch">
-  <div>
-    <small>Terminou este capítulo?</small>
-    <strong>Continue noutro livro ou capítulo</strong>
-  </div>
-  <a href="#" class="btn btn-primary" data-open-books aria-haspopup="dialog">
-    <i class="fas fa-book-open"></i> Escolher livro ou capítulo
-  </a>
-</div>
 
 <?php endif; ?>
 
