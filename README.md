@@ -100,6 +100,18 @@ define('DB_PASS', '');        // XAMPP por omissão: vazio
 
 > ⚠️ **Altere estas palavras-passe** no primeiro acesso (Perfil / Utilizadores).
 
+### Actualizar uma instalação existente
+
+Antes de publicar uma nova versão, faça uma cópia da base de dados no painel da hospedagem ou com `mysqldump`. Depois:
+
+1. Envie os ficheiros novos da aplicação, preservando `config/config.php` e os conteúdos de `uploads/`.
+2. No phpMyAdmin da hospedagem, seleccione a base de dados usada pelo site.
+3. Abra **Importar** e execute, pela ordem do nome, os ficheiros ainda não aplicados de `database/migrations/`.
+4. Para a versão actual, execute `database/migrations/20261022_reading_plans.sql`.
+5. Abra o site e confirme **Bíblia**, **Leitor**, **Pesquisa**, **Planos** e **Perfil**.
+
+As migrações usam `CREATE TABLE IF NOT EXISTS` e `INSERT IGNORE`, portanto podem ser executadas novamente sem apagar planos nem progresso existente. Não volte a importar `database/database.sql` numa instalação em produção: esse ficheiro destina-se a instalações novas.
+
 ### 7. Ícones (Font Awesome)
 A aplicação usa Font Awesome 6 Free. Coloque a distribuição **CSS + webfonts** em:
 
@@ -238,4 +250,4 @@ A API responde sempre `{ "success": bool, "data": …, "message": "…" }`. Endp
 | URL amigável não funciona | Active `mod_rewrite` no XAMPP (Apache → Config → httpd.conf → descomentar `LoadModule rewrite_module`); o site funciona igualmente sem ele |
 | Importação grande falha | Aumente `max_execution_time`/`memory_limit` no php.ini; a importação já corre em blocos de 500 versículos |
 | Ícones não aparecem | Instale Font Awesome em `assets/vendor/fontawesome/` (secção 7) |
-| Esqueci a senha de admin | Use "Recuperar" no login (o link aparece no ecrã, pois o XAMPP não envia e-mail) |
+| Esqueci a senha de admin | Configure o envio de e-mail e use “Recuperar” no login. Por segurança, o link de redefinição nunca é mostrado no ecrã. |
