@@ -5,7 +5,7 @@ $isAuthContext = in_array($currentFile, ['login.php','registar.php','recuperar.p
 $showBookPicker = in_array($currentFile, ['biblia.php','leitura.php','comparar.php'], true);
 $mobileItems = [
   ['/index.php','house','Início',['index.php']], ['/biblia.php','book-open','Bíblia',['biblia.php','leitura.php','comparar.php']],
-  ['/planos.php','calendar-check','Planos',['planos.php']], ['/favoritos.php','bookmark','Guardados',['favoritos.php','notas.php']],
+  ['/planos.php','calendar-check','Planos',['planos.php']], ['/favoritos.php','bookmark','Guardados',['favoritos.php','marcacoes.php','notas.php']],
   [$currentUser ? '/perfil.php' : '/login.php','user',$currentUser ? 'Perfil' : 'Entrar',['perfil.php','login.php','registar.php','historico.php','ministracoes.php']]
 ];
 ?></main>

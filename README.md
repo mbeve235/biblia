@@ -14,7 +14,7 @@ As traduções são **dados, não código**: qualquer versão da Bíblia pode se
 | Navegação Livro → Capítulo → Versículo | Gestão de traduções (CRUD) |
 | Pesquisa (palavras, frases, referências como `João 3:16`) | **Importação inteligente** com detecção de formato, validação, prévia, progresso e relatório |
 | Comparação de 2-4 traduções (colunas ou tabela) | Gestão de livros, capítulos e versículos |
-| Favoritos e notas pessoais | Gestão de utilizadores e papéis |
+| Versículos guardados, marcações coloridas e notas pessoais | Gestão de utilizadores e papéis |
 | Planos de leitura, metas diárias e sequência de leitura | Gestão de utilizadores e papéis |
 | Histórico + "Continuar a leitura" | Exportação JSON/CSV por tradução |
 | Modo claro/escuro, letra ajustável, foco e leitura em voz alta | Backup SQL completo |
@@ -107,7 +107,7 @@ Antes de publicar uma nova versão, faça uma cópia da base de dados no painel 
 1. Envie os ficheiros novos da aplicação, preservando `config/config.php` e os conteúdos de `uploads/`.
 2. No phpMyAdmin da hospedagem, seleccione a base de dados usada pelo site.
 3. Abra **Importar** e execute, pela ordem do nome, os ficheiros ainda não aplicados de `database/migrations/`.
-4. Para a versão actual, execute `database/migrations/20261022_reading_plans.sql`.
+4. Para a versão actual, execute `database/migrations/20261022_reading_plans.sql` e depois `database/migrations/20261022_verse_highlights.sql`.
 5. Abra o site e confirme **Bíblia**, **Leitor**, **Pesquisa**, **Planos** e **Perfil**.
 
 As migrações usam `CREATE TABLE IF NOT EXISTS` e `INSERT IGNORE`, portanto podem ser executadas novamente sem apagar planos nem progresso existente. Não volte a importar `database/database.sql` numa instalação em produção: esse ficheiro destina-se a instalações novas.

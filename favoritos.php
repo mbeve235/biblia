@@ -28,6 +28,7 @@ $favs = db_all(
 
 <nav class="saved-tabs" aria-label="Conteúdo guardado">
   <a class="active" aria-current="page" href="<?= url('/favoritos.php') ?>"><i class="fas fa-bookmark"></i> Versículos <span><?= count($favs) ?></span></a>
+  <a href="<?= url('/marcacoes.php') ?>"><i class="fas fa-highlighter"></i> Marcações</a>
   <a href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i> Notas</a>
 </nav>
 

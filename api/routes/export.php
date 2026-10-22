@@ -92,7 +92,7 @@ if ($action === 'database') {
     if (!is_admin()) json_fail('Acesso restrito ao administrador.', 403);
 
     $pdo = db();
-    $tables = ['users','password_resets','settings','translations','book_groups','books','chapters','verses','favorites','notes','reading_history','user_settings','imports','import_errors','search_logs','activity_log'];
+    $tables = ['users','password_resets','settings','translations','book_groups','books','chapters','verses','favorites','verse_highlights','notes','reading_history','user_settings','imports','import_errors','search_logs','activity_log'];
 
     $dump = "-- Bíblia Web — backup gerado em " . date('Y-m-d H:i:s') . "\n";
     $dump .= "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS = 0;\n\n";

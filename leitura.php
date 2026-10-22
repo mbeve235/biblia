@@ -88,9 +88,15 @@ if ($book) {
 // Favoritos e notas do utilizador (para os indicadores)
 $favIds = [];
 $noteIds = [];
+$highlightColors = [];
 if ($user = current_user()) {
     foreach (db_all('SELECT verse_id FROM favorites WHERE user_id = ?', [$user['id']]) as $f) $favIds[(int) $f['verse_id']] = true;
     foreach (db_all('SELECT verse_id FROM notes WHERE user_id = ?', [$user['id']]) as $n) $noteIds[(int) $n['verse_id']] = true;
+    try {
+        foreach (db_all('SELECT verse_id, color FROM verse_highlights WHERE user_id = ?', [$user['id']]) as $highlight) {
+            $highlightColors[(int) $highlight['verse_id']] = $highlight['color'];
+        }
+    } catch (PDOException $e) { /* a migração pode ainda não ter sido aplicada */ }
 
     // Registar no histórico (atracção silenciosa)
     if ($trans && $book && $verses) {
@@ -174,14 +180,16 @@ if ($user = current_user()) {
         $vid = (int) $v['id'];
         $isFav = isset($favIds[$vid]);
         $hasNote = isset($noteIds[$vid]);
+        $highlightColor = $highlightColors[$vid] ?? '';
     ?>
-      <p class="verse <?= $isFav ? 'fav' : '' ?>" id="v<?= (int) $v['verse_number'] ?>" data-verse-id="<?= $vid ?>" data-verse-number="<?= (int) $v['verse_number'] ?>">
+      <p class="verse <?= $isFav ? 'fav' : '' ?><?= $highlightColor ? ' verse-highlight-' . e($highlightColor) : '' ?>" id="v<?= (int) $v['verse_number'] ?>" data-verse-id="<?= $vid ?>" data-verse-number="<?= (int) $v['verse_number'] ?>" data-highlight="<?= e($highlightColor) ?>">
         <span class="verse-select-indicator" aria-hidden="true"><i class="fas fa-check"></i></span>
         <span class="vnum"><?= (int) $v['verse_number'] ?></span>
         <?= e($v['text']) ?>
         <?php if ($hasNote): ?><i class="fas fa-pen-to-square note-indicator" title="Este versículo tem uma nota"></i><?php endif; ?>
         <span class="vtools">
           <button type="button" class="act-fav <?= $isFav ? 'on' : '' ?>" title="Guardar versículo" aria-label="Guardar versículo" onclick="bwToggleFav(this, <?= $vid ?>)"><i class="fas fa-bookmark"></i></button>
+          <button type="button" class="act-highlight <?= $highlightColor ? 'on' : '' ?>" title="Marcar com cor" aria-label="Marcar versículo com cor" onclick="bwOpenHighlight(<?= $vid ?>, this)"><i class="fas fa-highlighter"></i></button>
           <button type="button" title="Nota" onclick="bwOpenNote(<?= $vid ?>, <?= (int) $v['verse_number'] ?>)"><i class="fas fa-pen-to-square"></i></button>
           <button type="button" title="Copiar" onclick="bwCopyVerse(<?= (int) $v['verse_number'] ?>, this)"><i class="fas fa-copy"></i></button>
           <button type="button" title="Partilhar" onclick="bwShareVerse(<?= (int) $v['verse_number'] ?>, this)"><i class="fas fa-share-nodes"></i></button>
@@ -235,6 +243,21 @@ if ($user = current_user()) {
 // ---- Scripts específicos da página -----------------------------------
 ob_start();
 ?>
+<!-- Paleta de marcação -->
+<div class="modal-overlay" id="modal-highlight">
+  <div class="modal highlight-modal" role="dialog" aria-modal="true" aria-labelledby="highlight-title">
+    <button class="modal-close" type="button" data-highlight-close aria-label="Fechar"><i class="fas fa-xmark"></i></button>
+    <h3 id="highlight-title">Marcar versículo</h3>
+    <p>Escolha uma cor suave para encontrar este versículo mais tarde.</p>
+    <div class="highlight-palette" role="group" aria-label="Cores da marcação">
+      <button type="button" data-highlight-color="yellow"><i></i><span>Amarelo</span></button>
+      <button type="button" data-highlight-color="green"><i></i><span>Verde</span></button>
+      <button type="button" data-highlight-color="blue"><i></i><span>Azul</span></button>
+      <button type="button" data-highlight-color="rose"><i></i><span>Rosa</span></button>
+    </div>
+    <button class="btn btn-ghost btn-block highlight-remove" type="button" id="highlight-remove"><i class="fas fa-eraser"></i> Remover marcação</button>
+  </div>
+</div>
 <!-- Modal de nota -->
 <div class="modal-overlay" id="modal-note">
   <div class="modal" style="max-width:480px">
@@ -269,6 +292,40 @@ function bwShareVerse(num, el) {
             bwVerseRef(num, el) + ' — ' + text.textContent.trim(),
             url.toString());
 }
+
+// ---- Marcações coloridas ----
+const highlightModal = document.getElementById('modal-highlight');
+let highlightVerseId = 0;
+let highlightTrigger = null;
+function bwOpenHighlight(verseId, trigger) {
+  if (!IS_LOGGED_IN) return toast('Inicie sessão para marcar versículos.', 'error');
+  highlightVerseId = verseId; highlightTrigger = trigger;
+  const verse = trigger.closest('.verse');
+  const activeColor = verse?.dataset.highlight || '';
+  highlightModal.querySelectorAll('[data-highlight-color]').forEach(button => button.classList.toggle('active', button.dataset.highlightColor === activeColor));
+  document.getElementById('highlight-remove').hidden = !activeColor;
+  highlightModal.classList.add('open');
+}
+function closeHighlight() { highlightModal?.classList.remove('open'); highlightTrigger?.focus(); }
+document.querySelectorAll('[data-highlight-close]').forEach(button => button.addEventListener('click', closeHighlight));
+highlightModal?.addEventListener('click', event => { if (event.target === highlightModal) closeHighlight(); });
+document.querySelectorAll('[data-highlight-color]').forEach(button => button.addEventListener('click', async () => {
+  try {
+    await api('POST', '/highlights', { verse_id: highlightVerseId, color: button.dataset.highlightColor });
+    const verse = document.querySelector('.verse[data-verse-id="' + highlightVerseId + '"]');
+    verse.classList.remove('verse-highlight-yellow','verse-highlight-green','verse-highlight-blue','verse-highlight-rose');
+    verse.classList.add('verse-highlight-' + button.dataset.highlightColor); verse.dataset.highlight = button.dataset.highlightColor;
+    highlightTrigger?.classList.add('on'); closeHighlight(); toast('Versículo marcado.', 'success');
+  } catch (error) { toast(error.message, 'error'); }
+}));
+document.getElementById('highlight-remove')?.addEventListener('click', async () => {
+  try {
+    await api('DELETE', '/highlights/' + highlightVerseId);
+    const verse = document.querySelector('.verse[data-verse-id="' + highlightVerseId + '"]');
+    verse.classList.remove('verse-highlight-yellow','verse-highlight-green','verse-highlight-blue','verse-highlight-rose'); verse.dataset.highlight = '';
+    highlightTrigger?.classList.remove('on'); closeHighlight(); toast('Marcação removida.');
+  } catch (error) { toast(error.message, 'error'); }
+});
 
 // ---- Selecção de vários versículos ----
 const selectionToggle = document.getElementById('verse-select-toggle');

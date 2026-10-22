@@ -29,6 +29,7 @@ $notes = db_all(
 
 <nav class="saved-tabs" aria-label="Conteúdo guardado">
   <a href="<?= url('/favoritos.php') ?>"><i class="fas fa-bookmark"></i> Versículos</a>
+  <a href="<?= url('/marcacoes.php') ?>"><i class="fas fa-highlighter"></i> Marcações</a>
   <a class="active" aria-current="page" href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i> Notas <span><?= count($notes) ?></span></a>
 </nav>
 
