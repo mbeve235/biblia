@@ -1593,3 +1593,10 @@ body.reading-mode .reading-exit {
 .app-reader .verses { padding-bottom:2.5rem; }
 .app-reader .chapter-nav { display:none; }
 @media(max-width:640px){.app-reader .reader-dock{bottom:calc(.7rem + env(safe-area-inset-bottom));}.app-reader .reader-header{padding-top:.5rem}.app-reader .reader-controls{margin-inline:-.15rem}.app-reader .reader-sticky-location{min-width:175px}}
+
+.saved-header { margin-bottom:1rem; }
+.saved-tabs { display:inline-flex; gap:.25rem; margin-bottom:1.2rem; padding:.3rem; border:1px solid var(--border); border-radius:13px; background:var(--surface-2); }
+.saved-tabs a { display:flex; align-items:center; gap:.45rem; padding:.55rem .85rem; border-radius:9px; color:var(--text-soft); font-weight:700; }
+.saved-tabs a:hover { color:var(--text); text-decoration:none; }
+.saved-tabs a.active { background:var(--surface); color:var(--accent); box-shadow:0 1px 3px rgba(44,48,45,.08); }
+.saved-tabs a span { min-width:20px; padding:.05rem .35rem; border-radius:999px; background:var(--accent-soft); text-align:center; font-size:.68rem; }

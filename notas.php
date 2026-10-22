@@ -5,6 +5,7 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 boot_session();
 $user = require_login();
+$pageTitle = 'Notas guardadas';
 require_once __DIR__ . '/includes/header.php';
 
 $notes = db_all(
@@ -21,10 +22,15 @@ $notes = db_all(
 );
 ?>
 
-<header class="page-header">
+<header class="page-header saved-header">
   <span class="page-kicker">Pessoal</span>
-  <div class="page-title-row"><span class="page-icon"><i class="fas fa-pen-to-square"></i></span><div><h1>Notas</h1><p><?= count($notes) ?> nota(s) pessoal(is).</p></div></div>
+  <div class="page-title-row"><span class="page-icon"><i class="fas fa-bookmark"></i></span><div><h1>Guardados</h1><p>Reúna aqui os versículos e pensamentos que deseja revisitar.</p></div></div>
 </header>
+
+<nav class="saved-tabs" aria-label="Conteúdo guardado">
+  <a href="<?= url('/favoritos.php') ?>"><i class="fas fa-bookmark"></i> Versículos</a>
+  <a class="active" aria-current="page" href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i> Notas <span><?= count($notes) ?></span></a>
+</nav>
 
 <?php if (!$notes): ?>
   <div class="empty-state">

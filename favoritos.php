@@ -5,6 +5,7 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 boot_session();
 $user = require_login();
+$pageTitle = 'Guardados';
 require_once __DIR__ . '/includes/header.php';
 
 $favs = db_all(
@@ -20,15 +21,20 @@ $favs = db_all(
 );
 ?>
 
-<header class="page-header">
+<header class="page-header saved-header">
   <span class="page-kicker">Pessoal</span>
-  <div class="page-title-row"><span class="page-icon page-icon-warning"><i class="fas fa-star"></i></span><div><h1>Favoritos</h1><p><?= count($favs) ?> versículo(s) guardado(s).</p></div></div>
+  <div class="page-title-row"><span class="page-icon"><i class="fas fa-bookmark"></i></span><div><h1>Guardados</h1><p>Reúna aqui os versículos e pensamentos que deseja revisitar.</p></div></div>
 </header>
+
+<nav class="saved-tabs" aria-label="Conteúdo guardado">
+  <a class="active" aria-current="page" href="<?= url('/favoritos.php') ?>"><i class="fas fa-bookmark"></i> Versículos <span><?= count($favs) ?></span></a>
+  <a href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i> Notas</a>
+</nav>
 
 <?php if (!$favs): ?>
   <div class="empty-state">
     <i class="fas fa-star"></i>
-    <p>Ainda não tem favoritos. Passe o rato sobre um versículo na leitura e toque na estrela.</p>
+    <p>Ainda não guardou versículos. Na leitura, abra as ações de um versículo e toque na estrela.</p>
     <a class="btn btn-primary" href="<?= url('/biblia.php') ?>">Começar a ler</a>
   </div>
 <?php else: ?>
