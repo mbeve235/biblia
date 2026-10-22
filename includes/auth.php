@@ -150,9 +150,28 @@ function csrf_check(?array $data = null): void
 /** Verifica credenciais e inicia sessão. Devolve mensagem de erro ou null. */
 function login_user(string $email, string $password): ?string
 {
-    $user = db_one('SELECT * FROM users WHERE email = ? LIMIT 1', [mb_strtolower(trim($email))]);
-    if (!$user) {
+    $email = mb_strtolower(trim($email));
+    $user  = db_one('SELECT * FROM users WHERE email = ? LIMIT 1', [$email]);
+
+    // Anti-força-bruta: cada falha fica registada e a tentativa seguinte sofre
+    // um atraso progressivo (2s, 4s, máx. 6s) — torna o ataque de dicionário
+    // impraticável pela interface. Mensagem genérica mantém-se igual.
+    $recentFails = (int) (db_one(
+        "SELECT COUNT(*) AS c FROM activity_log
+         WHERE action = 'login_failed' AND detail = ?
+           AND created_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)",
+        [$email]
+    )['c'] ?? 0);
+    if ($recentFails > 0) {
+        sleep(min($recentFails * 2, 6));
+    }
+    $fail = static function () use ($email): string {
+        log_activity(null, 'login_failed', $email);
         return 'E-mail ou palavra-passe incorrectos.';
+    };
+
+    if (!$user) {
+        return $fail();
     }
 
     // Arranque inicial: contas criadas com "PLAINTEXT:senha" no database.sql
@@ -160,11 +179,11 @@ function login_user(string $email, string $password): ?string
     $stored = (string) $user['password_hash'];
     if (str_starts_with($stored, 'PLAINTEXT:')) {
         if (!hash_equals(substr($stored, strlen('PLAINTEXT:')), $password)) {
-            return 'E-mail ou palavra-passe incorrectos.';
+            return $fail();
         }
         db_exec('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash($password, PASSWORD_DEFAULT), $user['id']]);
     } elseif (!password_verify($password, $stored)) {
-        return 'E-mail ou palavra-passe incorrectos.';
+        return $fail();
     }
     if ($user['status'] !== 'active') {
         return 'A sua conta está desactivada. Contacte o administrador.';
@@ -194,6 +213,53 @@ function logout_user(): void
     session_destroy();
 }
 
+/** Envia um e-mail pela aplicação.
+ *  Com MAIL_HOST configurado (config.php) usa o cliente SMTP do projecto
+ *  (includes/mailer.php) — ex.: Gmail com palavra-passe de aplicação.
+ *  Sem SMTP, cai na função mail() do PHP (inútil no XAMPP por omissão).
+ *  Regista SEMPRE a mensagem em logs/mail.log, com o resultado. */
+function send_app_mail(string $to, string $subject, string $body): bool
+{
+    $fromEmail = MAIL_FROM !== '' ? MAIL_FROM : (MAIL_USER !== '' ? MAIL_USER : 'no-reply@biblia.local');
+    $ok = false;
+    $via = 'mail()';
+    try {
+        if (MAIL_HOST !== '') {
+            $via = 'smtp (' . MAIL_HOST . ')';
+            $ok = smtp_send($to, $subject, $body, $fromEmail, APP_NAME);
+        } else {
+            $headers = implode("\r\n", [
+                'From: ' . APP_NAME . ' <' . $fromEmail . '>',
+                'Content-Type: text/plain; charset=UTF-8',
+                'X-Mailer: PHP/' . phpversion(),
+            ]);
+            $ok = @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', $body, $headers);
+        }
+    } catch (Throwable $e) {
+        error_log('[mailer] ' . $e->getMessage());
+    }
+
+    $dir = dirname(__DIR__) . '/logs';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0775, true);
+    }
+    @file_put_contents(
+        $dir . '/mail.log',
+        sprintf(
+            "[%s] para: %s | assunto: %s | via: %s | enviado: %s\n%s\n%s\n",
+            date('Y-m-d H:i:s'),
+            $to,
+            $subject,
+            $via,
+            $ok ? 'sim' : 'não',
+            $body,
+            str_repeat('-', 60)
+        ),
+        FILE_APPEND | LOCK_EX
+    );
+    return $ok;
+}
+
 /** Cria token de recuperação de senha (1h). Devolve o token. */
 function create_password_reset(string $email): ?string
 {
@@ -201,6 +267,19 @@ function create_password_reset(string $email): ?string
     if (!$user) {
         return null;
     }
+    // Anti-flood: no máximo 5 pedidos por hora por conta. Todos os tokens
+    // expiram 1h após a criação, logo os não expirados = pedidos da última hora.
+    // Devolve null sem distinguir do caso "e-mail inexistente" (a página mostra
+    // a mesma mensagem neutra — o atacante não percebe o limite).
+    $recent = (int) (db_one(
+        'SELECT COUNT(*) AS c FROM password_resets WHERE user_id = ? AND expires_at > NOW()',
+        [$user['id']]
+    )['c'] ?? 0);
+    if ($recent >= 5) {
+        return null;
+    }
+    // Invalida pedidos anteriores ainda não usados: só o link mais recente é válido
+    db_exec('UPDATE password_resets SET used = 1 WHERE user_id = ? AND used = 0', [$user['id']]);
     $token = bin2hex(random_bytes(32));
     db_exec(
         'INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))',

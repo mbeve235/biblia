@@ -57,10 +57,12 @@ $ogImage = url('assets/img/og.png');
 </head>
 <body class="<?= e($bodyClass) ?>">
 
+<a class="skip-link" href="#conteudo-principal">Saltar para o conteúdo</a>
+
 <header class="topbar">
   <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="sidebar"><i class="fas fa-bars"></i></button>
   <a class="brand" href="<?= url('/index.php') ?>">
-    <span class="logo"><i class="fas fa-book-bible"></i></span>
+    <span class="logo"><?= brand_svg() ?></span>
     <span><?= e(APP_NAME) ?></span>
   </a>
   <div class="spacer"></div>
@@ -107,6 +109,7 @@ $ogImage = url('assets/img/og.png');
   <div class="nav-label">Pessoal</div>
   <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'favoritos.php' ? 'active' : '' ?>" href="<?= url('/favoritos.php') ?>"><i class="fas fa-star"></i> Favoritos</a>
   <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'notas.php' ? 'active' : '' ?>" href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i> Notas</a>
+  <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'ministracoes.php' ? 'active' : '' ?>" href="<?= url('/ministracoes.php') ?>"><i class="fas fa-dove"></i> Ministrações</a>
   <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'historico.php' ? 'active' : '' ?>" href="<?= url('/historico.php') ?>"><i class="fas fa-clock-rotate-left"></i> Histórico</a>
 
   <div class="nav-label">Conta</div>
@@ -129,4 +132,4 @@ $ogImage = url('assets/img/og.png');
   <span style="font-size:.72rem;color:var(--text-faint);padding:0 .7rem" id="font-size-label">17px</span>
 </nav>
 
-<main class="main <?= $bodyClass === 'reading' ? 'reading' : '' ?>">
+<main class="main <?= $bodyClass === 'reading' ? 'reading' : '' ?>" id="conteudo-principal" tabindex="-1">

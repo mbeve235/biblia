@@ -22,7 +22,7 @@ $needLogin = ($_GET['msg'] ?? '') === 'needlogin';
 
 <div class="auth-wrap">
   <a class="brand" href="<?= url('/index.php') ?>">
-    <span class="logo"><i class="fas fa-book-bible"></i></span>
+    <span class="logo"><?= brand_svg() ?></span>
     <span><?= e(APP_NAME) ?></span>
   </a>
 
@@ -39,10 +39,10 @@ $needLogin = ($_GET['msg'] ?? '') === 'needlogin';
     <form method="post">
       <?= csrf_field() ?>
       <label class="field"><span>E-mail</span>
-        <input type="email" name="email" required autofocus value="<?= e($_POST['email'] ?? '') ?>">
+        <input type="email" name="email" required autofocus autocomplete="email" value="<?= e($_POST['email'] ?? '') ?>">
       </label>
       <label class="field"><span>Palavra-passe</span>
-        <input type="password" name="password" required>
+        <input type="password" name="password" required autocomplete="current-password">
       </label>
       <button class="btn btn-primary btn-block" type="submit">Entrar</button>
     </form>

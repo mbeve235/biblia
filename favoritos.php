@@ -37,6 +37,7 @@ $favs = db_all(
     <section class="card">
       <div class="card-head">
         <h3 style="color:var(--accent)">
+          <span class="bk-badge" style="vertical-align:-5px"><?= brand_svg('', 12) ?></span>
           <a href="<?= url('/leitura.php?translation=' . urlencode($f['translation']) . '&book=' . $f['slug'] . '&chapter=' . (int) $f['chapter_number'] . '&verse=' . (int) $f['verse_number']) ?>">
             <?= e($f['book_name']) ?> <?= (int) $f['chapter_number'] ?>:<?= (int) $f['verse_number'] ?>
           </a>

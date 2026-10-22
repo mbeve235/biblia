@@ -13,6 +13,7 @@ require_once BASE_PATH . '/config/database.php';
 require_once BASE_PATH . '/includes/helpers.php';
 require_once BASE_PATH . '/includes/response.php';
 require_once BASE_PATH . '/includes/logger.php';
+require_once BASE_PATH . '/includes/mailer.php';
 require_once BASE_PATH . '/includes/auth.php';
 require_once BASE_PATH . '/includes/settings.php';
 

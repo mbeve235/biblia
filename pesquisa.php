@@ -79,7 +79,7 @@ if ($q !== '') {
     <?php foreach ($results['results'] as $r): ?>
       <section class="card">
         <div class="card-head">
-          <h3 style="color:var(--accent)"><?= e($r['reference']) ?> <span class="badge badge-accent"><?= e($r['translation']) ?></span></h3>
+          <h3 style="color:var(--accent)"><span class="bk-badge" style="vertical-align:-5px"><?= brand_svg('', 12) ?></span> <?= e($r['reference']) ?> <span class="badge badge-accent"><?= e($r['translation']) ?></span></h3>
           <a class="btn btn-sm" href="<?= url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse']) ?>">
             <i class="fas fa-book-open"></i> Ler capítulo
           </a>
@@ -100,6 +100,7 @@ if ($q !== '') {
       <?php foreach (($results['results'] ?? []) as $r): ?>
         <div class="search-result">
           <span class="ref" onclick="location.href='<?= url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse']) ?>'">
+            <span class="bk-badge" style="vertical-align:-4px"><?= brand_svg('', 11) ?></span>
             <?= e($r['reference']) ?>
           </span>
           <span class="meta"><i class="fas fa-language"></i> <?= e($r['translation']) ?></span>

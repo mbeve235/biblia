@@ -108,7 +108,7 @@ $verseNumbers = array_keys($verseNumbers);
     <div class="compare-grid" style="grid-template-columns:repeat(<?= min(4, count($columnData)) ?>,1fr)">
       <?php foreach ($columnData as $abbr => $verses): ?>
         <div class="compare-col">
-          <h3><i class="fas fa-language"></i> <?= e($abbr) ?> <small style="color:var(--text-faint);font-weight:400"><?= e($abbrToName[$abbr] ?? '') ?></small></h3>
+          <h3><span class="bk-badge"><?= brand_svg('', 12) ?></span> <?= e($abbr) ?> <small style="color:var(--text-faint);font-weight:400"><?= e($abbrToName[$abbr] ?? '') ?></small></h3>
           <?php foreach ($verses as $num => $text): ?>
             <div class="compare-verse">
               <span class="ref"><?= e($book['name']) ?> <?= $chapNum ?>:<?= $num ?></span>

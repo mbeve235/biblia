@@ -35,7 +35,7 @@ if (settings_get('registration_enabled', '1') !== '1') {
 
 <div class="auth-wrap">
   <a class="brand" href="<?= url('/index.php') ?>">
-    <span class="logo"><i class="fas fa-book-bible"></i></span>
+    <span class="logo"><?= brand_svg() ?></span>
     <span><?= e(APP_NAME) ?></span>
   </a>
 
@@ -50,16 +50,16 @@ if (settings_get('registration_enabled', '1') !== '1') {
       <form method="post">
         <?= csrf_field() ?>
         <label class="field"><span>Nome</span>
-          <input type="text" name="name" required minlength="3" value="<?= e($_POST['name'] ?? '') ?>">
+          <input type="text" name="name" required minlength="3" autocomplete="name" value="<?= e($_POST['name'] ?? '') ?>">
         </label>
         <label class="field"><span>E-mail</span>
-          <input type="email" name="email" required value="<?= e($_POST['email'] ?? '') ?>">
+          <input type="email" name="email" required autocomplete="email" value="<?= e($_POST['email'] ?? '') ?>">
         </label>
         <label class="field"><span>Palavra-passe (mín. 6)</span>
-          <input type="password" name="password" required minlength="6">
+          <input type="password" name="password" required minlength="6" autocomplete="new-password">
         </label>
         <label class="field"><span>Confirmar palavra-passe</span>
-          <input type="password" name="password2" required minlength="6">
+          <input type="password" name="password2" required minlength="6" autocomplete="new-password">
         </label>
         <button class="btn btn-primary btn-block" type="submit">Criar conta</button>
       </form>

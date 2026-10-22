@@ -1,8 +1,8 @@
 <?php
 /**
  * Recuperação de palavra-passe em dois passos:
- * 1) pedir token; 2) definir nova palavra-passe (token apresentado no ecrã,
- * porque a aplicação não envia e-mails por omissão no XAMPP).
+ * 1) indicar o e-mail — o link de redefinição é enviado SÓ por e-mail
+ *    (nunca mostrado no ecrã); 2) definir a nova palavra-passe pelo link recebido.
  */
 require_once __DIR__ . '/includes/header.php';
 
@@ -43,15 +43,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['password']) && $step
     $email = trim((string) ($_POST['email'] ?? ''));
     $newToken = create_password_reset($email);
     // Por segurança não revelamos se o e-mail existe
-    $info = $newToken
-        ? 'Link de recuperação gerado. Como este ambiente não envia e-mails, use o link abaixo:'
-        : 'Se este e-mail estiver registado, receberá instruções. (Verifique também a escrita do endereço.)';
+    $info = 'Se este e-mail estiver registado, receberá instruções. (Verifique também a escrita do endereço.)';
+    if ($newToken) {
+        $resetLink = url('/recuperar.php?token=' . $newToken);
+        $userName = (string) (db_one('SELECT name FROM users WHERE email = ?', [mb_strtolower($email)])['name'] ?? '');
+        $greeting = 'Olá' . ('' !== $userName ? ' ' . $userName : '') . ",\n\n";
+        $sent = send_app_mail(
+            $email,
+            APP_NAME . ' — recuperação de palavra-passe',
+            $greeting
+            . "Recebemos um pedido de recuperação de palavra-passe para a sua conta.\n"
+            . "Use o link abaixo para definir uma nova (expira em 1 hora):\n\n"
+            . $resetLink . "\n\n"
+            . "Se não foi você quem pediu, ignore este e-mail — a sua palavra-passe actual continua válida.\n\n"
+            . APP_NAME
+        );
+        // Mesmo em falha de envio a mensagem mantém-se idêntica: nunca revelamos
+        // nada nem colocamos o link no ecrã — ele viaja exclusivamente por e-mail.
+    }
 }
 ?>
 
 <div class="auth-wrap">
   <a class="brand" href="<?= url('/index.php') ?>">
-    <span class="logo"><i class="fas fa-book-bible"></i></span>
+    <span class="logo"><?= brand_svg() ?></span>
     <span><?= e(APP_NAME) ?></span>
   </a>
 
@@ -61,14 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['password']) && $step
     <?php if ($error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endif; ?>
     <?php if ($info): ?><div class="alert alert-success"><?= e($info) ?></div><?php endif; ?>
 
-    <?php if (isset($newToken) && $newToken): ?>
-      <p><a href="<?= url('/recuperar.php?token=' . $newToken) ?>">Clique aqui para definir a nova palavra-passe</a></p>
-      <p style="font-size:.78rem;color:var(--text-faint)">Este link expira em 1 hora.</p>
-    <?php elseif ($step === 'request'): ?>
+    <?php if ($step === 'request'): ?>
       <form method="post">
         <?= csrf_field() ?>
         <label class="field"><span>E-mail da conta</span>
-          <input type="email" name="email" required>
+          <input type="email" name="email" required autocomplete="email">
         </label>
         <button class="btn btn-primary btn-block" type="submit">Gerar link de recuperação</button>
       </form>

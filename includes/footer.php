@@ -21,20 +21,44 @@ $bottomItems = [
   <?php endforeach; ?>
 </nav>
 
-<!-- Modal de selecção de livro/capítulo -->
-<div class="modal-overlay" id="modal-books">
-  <div class="modal">
-    <button class="modal-close" type="button" aria-label="Fechar"><i class="fas fa-xmark"></i></button>
-    <h3>Escolher leitura</h3>
-    <div class="testament-tabs">
-      <button type="button" data-testament="AT">Antigo Testamento</button>
-      <button type="button" data-testament="NT">Novo Testamento</button>
+<!-- Modal de selecção de livro/capítulo (leitor) — mesmo design do selector das ministrações -->
+<div class="vp-overlay" id="modal-books">
+  <div class="vp-modal" role="dialog" aria-modal="true" aria-label="Escolher leitura">
+    <header class="vp-head">
+      <div class="vp-head-main">
+        <span class="vp-head-badge"><?= brand_svg('', 18) ?></span>
+        <div class="vp-head-text">
+          <h3>Escolher leitura</h3>
+          <div class="vp-steps">
+            <button type="button" class="vp-step" data-step="book"><b>1</b><span>Livro</span></button>
+            <i class="fas fa-chevron-right vp-step-sep"></i>
+            <button type="button" class="vp-step" data-step="chapter"><b>2</b><span>Capítulo</span></button>
+          </div>
+        </div>
+      </div>
+      <button class="vp-close" type="button" aria-label="Fechar"><i class="fas fa-xmark"></i></button>
+    </header>
+
+    <div class="vp-body">
+      <div class="vp-sec vp-sec-trans">
+        <div class="vp-seg" id="bp-testament" role="group" aria-label="Testamento">
+          <button type="button" class="vp-seg-btn on" data-tst="AT">Antigo</button>
+          <button type="button" class="vp-seg-btn" data-tst="NT">Novo</button>
+        </div>
+      </div>
+      <div class="vp-view" id="bp-view"></div>
     </div>
-    <div id="book-grid" class="book-grid"></div>
+
+    <footer class="vp-foot">
+      <span class="vp-count" id="bp-loc">Bíblia Sagrada</span>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-ghost" type="button" id="bp-cancel">Fechar</button>
+      </div>
+    </footer>
   </div>
 </div>
 
-<div class="toast-container"></div>
+<div class="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <footer style="text-align:center;color:var(--text-faint);font-size:.78rem;padding:1rem 0 4rem">
   <?= e(APP_NAME) ?> · v<?= e(APP_VERSION) ?> — conteúdo bíblico sujeito aos direitos de cada tradução.
@@ -45,7 +69,7 @@ $bottomItems = [
   window.CSRF_TOKEN = <?= json_encode(csrf_token()) ?>;
   window.IS_LOGGED_IN = <?= current_user() ? 'true' : 'false' ?>;
 </script>
-<script src="<?= url('assets/js/app.js') ?>"></script>
+<script src="<?= url('assets/js/app.js') ?>?v=<?= filemtime(__DIR__ . '/../assets/js/app.js') ?>"></script>
 <?= $pageScripts ?? '' ?>
 </body>
 </html>

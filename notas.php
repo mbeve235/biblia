@@ -38,6 +38,7 @@ $notes = db_all(
     <section class="card note-card">
       <div class="card-head">
         <h3 style="color:var(--accent)">
+          <span class="bk-badge" style="vertical-align:-5px"><?= brand_svg('', 12) ?></span>
           <a href="<?= url('/leitura.php?translation=' . urlencode($n['translation']) . '&book=' . $n['slug'] . '&chapter=' . (int) $n['chapter_number'] . '&verse=' . (int) $n['verse_number']) ?>">
             <?= e($n['book_name']) ?> <?= (int) $n['chapter_number'] ?>:<?= (int) $n['verse_number'] ?>
           </a>

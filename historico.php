@@ -32,7 +32,7 @@ $history = db_all(
   <section class="card" style="padding:.4rem 1.2rem">
     <?php foreach ($history as $h): ?>
       <div class="search-result" style="display:flex;align-items:center;gap:1rem">
-        <i class="fas fa-book-open" style="color:var(--accent)"></i>
+        <span class="bk-badge" style="width:26px;height:26px;border-radius:8px"><?= brand_svg('', 15) ?></span>
         <div style="flex:1">
           <a href="<?= url('/leitura.php?translation=' . urlencode($h['translation']) . '&book=' . $h['slug'] . '&chapter=' . (int) $h['chapter_number']) ?>" style="font-weight:700">
             <?= e($h['book_name']) ?> <?= (int) $h['chapter_number'] ?>

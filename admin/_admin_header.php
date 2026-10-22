@@ -28,7 +28,7 @@ $pageTitle = ($pageTitle ?? 'Administração') . ' — Admin';
 <header class="topbar">
   <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="sidebar"><i class="fas fa-bars"></i></button>
   <a class="brand" href="<?= url('/admin/index.php') ?>">
-    <span class="logo" style="background:linear-gradient(135deg,#e67e22,#f39c12)"><i class="fas fa-gauge-high"></i></span>
+    <span class="logo" style="background:linear-gradient(135deg,#e67e22,#f39c12)"><?= brand_svg() ?></span>
     <span>Admin · <?= e(APP_NAME) ?></span>
   </a>
   <div class="spacer"></div>

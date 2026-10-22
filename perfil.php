@@ -83,7 +83,7 @@ function apply_db_prefs(): void
         <input type="text" name="name" value="<?= e($user['name']) ?>" minlength="3" required>
       </label>
       <label class="field"><span>E-mail (não editável)</span>
-        <input type="email" value="<?= e($user['email']) ?>" disabled>
+        <input type="email" value="<?= e($user['email']) ?>" disabled autocomplete="email">
       </label>
       <label class="field"><span>Função</span>
         <input type="text" value="<?= e($user['role']) ?>" disabled>
@@ -120,10 +120,10 @@ function apply_db_prefs(): void
     <form method="post">
       <?= csrf_field() ?>
       <label class="field"><span>Palavra-passe actual</span>
-        <input type="password" name="current" required>
+        <input type="password" name="current" required autocomplete="current-password">
       </label>
       <label class="field"><span>Nova palavra-passe (mín. 6)</span>
-        <input type="password" name="password" required minlength="6">
+        <input type="password" name="password" required minlength="6" autocomplete="new-password">
       </label>
       <button class="btn btn-primary" name="save_password" value="1" type="submit">Alterar palavra-passe</button>
     </form>
@@ -131,7 +131,7 @@ function apply_db_prefs(): void
 
   <section class="card">
     <h3>Actividade</h3>
-    <div class="grid grid-2">
+    <div class="stats-grid">
       <div class="stat-card"><div class="icon"><i class="fas fa-star"></i></div>
         <div><div class="value"><?= fmt_num($favCount) ?></div><div class="label">Favoritos</div></div></div>
       <div class="stat-card"><div class="icon"><i class="fas fa-pen-to-square"></i></div>

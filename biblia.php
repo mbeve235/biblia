@@ -56,9 +56,9 @@ if ($selectedBook && $trans) {
     <p style="color:var(--text-soft)"><?= (int) $selectedBook['chapters_count'] ?> capítulos · tradução <strong><?= e($trans['abbreviation']) ?></strong></p>
   </div>
 
-  <div class="chapter-grid" style="grid-template-columns:repeat(auto-fill,minmax(52px,1fr))">
+  <div class="chapter-grid chapters-page">
     <?php for ($c = 1; $c <= (int) $selectedBook['chapters_count']; $c++): ?>
-      <a class="btn" style="padding:.6rem 0;<?= ($chaptersWithVerses[$c] ?? false) ? '' : 'opacity:.4' ?>"
+      <a class="chapter-tile<?= ($chaptersWithVerses[$c] ?? false) ? '' : ' empty' ?>"
          href="<?= url('/leitura.php?translation=' . urlencode($trans['abbreviation']) . '&book=' . $selectedBook['slug'] . '&chapter=' . $c) ?>">
         <?= $c ?>
       </a>
@@ -82,14 +82,17 @@ if ($selectedBook && $trans) {
     <?php $testGroups = array_filter($groups, fn($g) => $g['testament'] === $test); ?>
     <section class="card">
       <div class="card-head">
-        <h2><?= $test === 'AT' ? '📜 Antigo Testamento' : '✝ Novo Testamento' ?></h2>
+        <h2>
+          <span class="test-mark <?= $test === 'AT' ? 'at' : 'nt' ?>"><?= brand_svg('', 14) ?></span>
+          <?= $test === 'AT' ? 'Antigo Testamento' : 'Novo Testamento' ?>
+        </h2>
       </div>
       <?php foreach ($testGroups as $g): ?>
         <div class="nav-label" style="margin:.9rem .1rem .4rem"><?= e($g['name']) ?></div>
         <div class="book-grid">
           <?php foreach ($byGroup[(int) $g['id']] ?? [] as $b): ?>
             <a class="book-card" href="<?= url('/biblia.php?book=' . $b['slug'] . '&translation=' . urlencode($trans['abbreviation'] ?? '')) ?>">
-              <span><?= e($b['name']) ?></span>
+              <span class="bk-name"><span class="bk-badge"><?= brand_svg('', 12) ?></span><?= e($b['name']) ?></span>
               <span class="bk-meta"><small><?= (int) $b['chapters_count'] ?></small><i class="fas fa-chevron-right"></i></span>
             </a>
           <?php endforeach; ?>

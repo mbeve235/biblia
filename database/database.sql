@@ -165,6 +165,30 @@ CREATE TABLE notes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- Ministrações — estudos e interpretações pessoais da Palavra
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS ministracoes;
+CREATE TABLE ministracoes (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id        INT UNSIGNED NOT NULL,
+  title          VARCHAR(180) NOT NULL,
+  body           MEDIUMTEXT NOT NULL,
+  verse_id       INT UNSIGNED NULL,
+  book_id        SMALLINT UNSIGNED NULL,
+  chapter_number SMALLINT UNSIGNED NULL,
+  share_token    VARCHAR(32) NULL,
+  refs_json      TEXT NULL,
+  created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_min_user (user_id, updated_at),
+  KEY idx_min_book (book_id, chapter_number),
+  UNIQUE KEY uq_min_share (share_token),
+  CONSTRAINT fk_min_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_min_verse FOREIGN KEY (verse_id) REFERENCES verses(id) ON DELETE SET NULL,
+  CONSTRAINT fk_min_book  FOREIGN KEY (book_id)  REFERENCES books(id)  ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- Histórico de leitura e preferências
 -- ---------------------------------------------------------------------
 DROP TABLE IF EXISTS reading_history;

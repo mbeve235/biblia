@@ -71,7 +71,18 @@ function slugify(string $text): string
     $text = preg_replace('/[^a-z0-9]+/', '-', (string) $text) ?? '';
     return trim($text, '-');
 }
-
+/** Logótipo da marca (livro aberto com cruz) como SVG inline — herda a cor
+ *  do texto via currentColor e é nítido em qualquer tamanho. */
+function brand_svg(string $class = '', int $size = 22): string
+{
+    $cls = $class !== '' ? ' class="' . e($class) . '"' : '';
+    return '<svg' . $cls . ' width="' . $size . '" height="' . $size . '" viewBox="0 0 64 64" aria-hidden="true">'
+        . '<path fill="currentColor" d="M32 20c-4-3.4-9.6-4.6-15-4.6v29c5.4 0 11 1.2 15 4.6 4-3.4 9.6-4.6 15-4.6v-29c-5.4 0-11 1.2-15 4.6z"/>'
+        . '<path d="M32 20v29" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>'
+        . '<path d="M22.5 27h7M26 23.5v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>'
+        . '<path d="M37 27h7M37 32h7M37 37h4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
+        . '</svg>';
+}
 /** Referência legível, ex.: "João 3:16". */
 function verse_reference(string $bookName, int $chapter, int $verse): string
 {

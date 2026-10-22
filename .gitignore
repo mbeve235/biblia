@@ -4,6 +4,9 @@ uploads/*
 !uploads/.gitkeep
 install.lock
 
+# Configuração privada da máquina (credenciais SMTP, produção, etc.)
+config/local.php
+
 # Backups/arquivos locais
 *.zip
 
