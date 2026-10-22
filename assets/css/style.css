@@ -457,6 +457,13 @@ table.table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .reader-control-group .btn { border: 0; border-radius: 0; }
 .reader-size-label { color: var(--text-faint); font-size: .74rem; font-weight: 700; padding: 0 .15rem; }
 .reader-controls .active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.reader-sticky-location { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .55rem; min-width: 190px; min-height: 38px; padding: .3rem .65rem; border: 1px solid var(--accent); border-radius: 9px; background: var(--surface); color: var(--text); cursor: pointer; font: inherit; text-align: left; }
+.reader-sticky-location > i:first-child { color: var(--accent); }
+.reader-sticky-location > i:last-child { color: var(--text-faint); font-size: .65rem; }
+.reader-sticky-location span { display: grid; min-width: 0; line-height: 1.1; }
+.reader-sticky-location strong { overflow: hidden; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+.reader-sticky-location small { margin-top: .15rem; color: var(--text-faint); font-size: .58rem; }
+.reader-sticky-location:hover { background: var(--accent-soft); }
 .verses { font-family: var(--read-font); font-size: var(--read-font-size); line-height: var(--read-line); }
 .verse {
   display: block; padding: .45rem 3rem .45rem .65rem; margin: 0 -.65rem; border-radius: 10px;
@@ -508,7 +515,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .verse-selection-bar:not(.has-selection) #selected-copy,
 .verse-selection-bar:not(.has-selection) #selected-share { opacity: .45; }
 
-.reader-dock { position: fixed; z-index: 45; left: calc(50% + 120px); bottom: 1rem; display: grid; grid-template-columns: 42px minmax(150px, 230px) 42px; align-items: stretch; overflow: hidden; border: 1px solid color-mix(in srgb, var(--border) 75%, var(--accent)); border-radius: 16px; background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: 0 10px 35px rgba(20, 24, 46, .2); backdrop-filter: blur(14px); transform: translateX(-50%); transition: opacity .15s, transform .15s, bottom .2s; }
+.reader-dock { position: fixed; z-index: 45; left: 50%; bottom: calc(4.7rem + env(safe-area-inset-bottom)); display: none; grid-template-columns: 44px minmax(150px, 1fr) 44px; width: min(340px, calc(100% - 1.2rem)); align-items: stretch; overflow: hidden; border: 1px solid color-mix(in srgb, var(--border) 75%, var(--accent)); border-radius: 16px; background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: 0 10px 35px rgba(20, 24, 46, .2); backdrop-filter: blur(14px); transform: translateX(-50%); transition: opacity .15s, transform .15s, bottom .2s; }
 .reader-dock-arrow { display: grid; place-items: center; min-height: 48px; color: var(--text-soft); }
 .reader-dock-arrow:hover { background: var(--accent-soft); color: var(--accent); text-decoration: none; }
 .reader-dock-arrow.disabled { opacity: .3; }
@@ -1226,7 +1233,6 @@ input:disabled, select:disabled, textarea:disabled {
 .bottom-nav { display: none; }
 
 @media (max-width: 1024px) {
-  .reader-dock { left: 50%; }
   .reader-scroll-progress { left: 0; }
   /* Sidebar fica ACIMA do topbar (60) para o menu ser clicável; backdrop logo abaixo.
      Antes: sidebar 50 < backdrop 55 → o backdrop cobria o menu aberto e nenhum item era clicável. */
@@ -1249,6 +1255,7 @@ input:disabled, select:disabled, textarea:disabled {
 }
 
 @media (max-width: 640px) {
+  .reader-dock { display: grid; }
   .personal-filter { flex-wrap: wrap; }
   .personal-filter span { width: 100%; padding-left: .2rem; }
   /* Topbar mobile redesenhado: em vez de espremer tudo numa linha com ícones
@@ -1354,7 +1361,7 @@ input:disabled, select:disabled, textarea:disabled {
 
   /* Leitura */
   .reader-header h1 { font-size: 1.5rem; }
-  .reader-header h1 .book-switcher { font-size: 1.15rem; padding: .45rem .85rem; gap: .4rem; }
+  .reader-sticky-location { display: none; }
 
   /* Toasts não podem ficar tapados pela bottom-nav */
   .toast-container { bottom: 4.6rem; right: .6rem; left: .6rem; align-items: stretch; }
@@ -1362,7 +1369,6 @@ input:disabled, select:disabled, textarea:disabled {
 
   /* Navegação prev/next: botões podem quebrar em duas linhas */
   .chapter-nav .btn { white-space: normal; text-align: left; padding: .5rem .7rem; }
-  .reader-dock { bottom: calc(4.7rem + env(safe-area-inset-bottom)); grid-template-columns: 44px minmax(150px, 1fr) 44px; width: min(340px, calc(100% - 1.2rem)); }
 
   /* Modal de livros/capítulos em folga quase total */
   .modal-overlay { padding: 3.4rem .55rem 1rem; align-items: stretch; }

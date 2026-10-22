@@ -121,13 +121,7 @@ if ($user = current_user()) {
     <span class="reader-translation"><i class="fas fa-language"></i> <?= e($trans['abbreviation']) ?></span>
     <span>Capítulo <?= $chapNum ?> de <?= $chapterTotal ?></span>
   </div>
-  <h1>
-    <a href="#" data-open-books class="book-switcher" title="Trocar de livro ou capítulo" aria-haspopup="dialog" aria-label="Trocar de livro ou capítulo — actualmente em <?= e($book['name']) ?> <?= $chapNum ?>">
-      <i class="fas fa-book-bible"></i>
-      <span><?= e($book['name']) ?> <?= $chapNum ?></span>
-      <i class="fas fa-chevron-down chv"></i>
-    </a>
-  </h1>
+  <h1><?= e($book['name']) ?> <?= $chapNum ?></h1>
   <p class="reader-translation-name"><?= e($trans['name']) ?></p>
   <div class="reader-progress" aria-label="Progresso neste livro: <?= (int) round($chapterProgress) ?>%">
     <span style="width:<?= number_format($chapterProgress, 2, '.', '') ?>%"></span>
@@ -135,6 +129,11 @@ if ($user = current_user()) {
 </div>
 
 <div class="reader-controls" aria-label="Ferramentas de leitura">
+  <button class="reader-sticky-location" type="button" data-open-books aria-haspopup="dialog" aria-label="Trocar livro ou capítulo; actualmente em <?= e($book['name']) ?> <?= $chapNum ?>">
+    <i class="fas fa-book-open"></i>
+    <span><strong><?= e($book['name']) ?> <?= $chapNum ?></strong><small>Livro e capítulo</small></span>
+    <i class="fas fa-chevron-down"></i>
+  </button>
   <div class="reader-control-group" aria-label="Tamanho do texto">
     <button class="btn btn-sm" data-font-dec type="button" title="Diminuir letra" aria-label="Diminuir letra"><i class="fas fa-minus"></i></button>
     <span class="reader-size-label" aria-hidden="true">Texto</span>
