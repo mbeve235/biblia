@@ -5,7 +5,7 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 boot_session();
 $user = require_login();
-require_once __DIR__ . '/includes/header.php';
+$pageTitle = 'Perfil e preferências';
 
 $prefs = db_one('SELECT theme, font_size, line_spacing FROM user_settings WHERE user_id = ?', [$user['id']]) ??
          ['theme' => 'light', 'font_size' => 17, 'line_spacing' => 18];
@@ -27,16 +27,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($d['save_prefs'])) {
+        $newTheme = ($d['theme'] ?? 'light') === 'dark' ? 'dark' : 'light';
+        $newFontSize = max(14, min(28, (int) ($d['font_size'] ?? 17)));
+        $newLineSpacing = max(14, min(34, (int) ($d['line_spacing'] ?? 18)));
         db_exec(
             'INSERT INTO user_settings (user_id, theme, font_size, line_spacing) VALUES (?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE theme = VALUES(theme), font_size = VALUES(font_size), line_spacing = VALUES(line_spacing)',
             [
                 $user['id'],
-                ($d['theme'] ?? 'light') === 'dark' ? 'dark' : 'light',
-                max(14, min(28, (int) ($d['font_size'] ?? 17))),
-                max(14, min(34, (int) ($d['line_spacing'] ?? 18))),
+                $newTheme,
+                $newFontSize,
+                $newLineSpacing,
             ]
         );
+        $prefs = ['theme' => $newTheme, 'font_size' => $newFontSize, 'line_spacing' => $newLineSpacing];
         apply_db_prefs();
         $saved = true;
     }
@@ -66,6 +70,7 @@ function apply_db_prefs(): void
         echo '<style>:root{--read-font-size:' . (int) $p['font_size'] . 'px;--read-line:' . ((int) $p['line_spacing'] / 10) . '}</style>';
     }
 }
+require_once __DIR__ . '/includes/header.php';
 ?>
 <?= apply_db_prefs(); ?>
 
@@ -97,18 +102,13 @@ function apply_db_prefs(): void
     <?php if ($saved): ?><div class="alert alert-success">Preferências guardadas.</div><?php endif; ?>
     <form method="post">
       <?= csrf_field() ?>
-      <label class="field"><span>Tema</span>
-        <select name="theme">
-          <option value="light" <?= $prefs['theme'] === 'light' ? 'selected' : '' ?>>Claro</option>
-          <option value="dark" <?= $prefs['theme'] === 'dark' ? 'selected' : '' ?>>Escuro</option>
-        </select>
-      </label>
-      <label class="field"><span>Tamanho da letra (14-28px)</span>
-        <input type="number" name="font_size" min="14" max="28" value="<?= (int) $prefs['font_size'] ?>">
-      </label>
-      <label class="field"><span>Espaçamento entre linhas (14-34)</span>
-        <input type="number" name="line_spacing" min="14" max="34" value="<?= (int) $prefs['line_spacing'] ?>">
-      </label>
+      <fieldset class="reading-theme-choice"><legend>Tema</legend>
+        <label><input type="radio" name="theme" value="light" <?= $prefs['theme'] === 'light' ? 'checked' : '' ?>><span class="theme-swatch light"><i></i><b>Claro</b><small>Marfim suave</small></span></label>
+        <label><input type="radio" name="theme" value="dark" <?= $prefs['theme'] === 'dark' ? 'checked' : '' ?>><span class="theme-swatch dark"><i></i><b>Escuro</b><small>Carvão quente</small></span></label>
+      </fieldset>
+      <label class="field range-field"><span>Tamanho da letra <output id="font-size-output"><?= (int) $prefs['font_size'] ?>px</output></span><input type="range" name="font_size" min="14" max="28" value="<?= (int) $prefs['font_size'] ?>"></label>
+      <label class="field range-field"><span>Espaçamento entre linhas <output id="line-spacing-output"><?= number_format((int)$prefs['line_spacing']/10,1) ?></output></span><input type="range" name="line_spacing" min="14" max="34" value="<?= (int) $prefs['line_spacing'] ?>"></label>
+      <div class="reading-preview" id="reading-preview"><small>Pré-visualização</small><p><sup>16</sup> Porque Deus amou o mundo de tal maneira que deu o seu Filho unigénito.</p></div>
       <button class="btn btn-primary" name="save_prefs" value="1" type="submit">Guardar preferências</button>
     </form>
   </section>
@@ -143,4 +143,20 @@ function apply_db_prefs(): void
   </section>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php ob_start(); ?>
+<script>
+const preferenceForm=document.querySelector('button[name="save_prefs"]')?.form;
+const fontRange=preferenceForm?.querySelector('[name="font_size"]');
+const lineRange=preferenceForm?.querySelector('[name="line_spacing"]');
+const readingPreview=document.getElementById('reading-preview');
+function previewPreferences(){
+  if(!readingPreview)return;
+  const size=Number(fontRange.value),line=Number(lineRange.value)/10;
+  readingPreview.style.fontSize=size+'px';readingPreview.style.lineHeight=String(line);
+  document.getElementById('font-size-output').value=size+'px';document.getElementById('line-spacing-output').value=line.toFixed(1);
+}
+fontRange?.addEventListener('input',previewPreferences);lineRange?.addEventListener('input',previewPreferences);previewPreferences();
+preferenceForm?.addEventListener('submit',()=>{const theme=preferenceForm.querySelector('[name="theme"]:checked')?.value||'light';localStorage.setItem('bw_theme',theme);localStorage.setItem('bw_fontsize',fontRange.value);});
+document.querySelectorAll('[name="theme"]').forEach(input=>input.addEventListener('change',()=>applyTheme(input.value)));
+</script>
+<?php $pageScripts=ob_get_clean(); require_once __DIR__ . '/includes/footer.php'; ?>
