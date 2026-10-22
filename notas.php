@@ -33,8 +33,13 @@ $notes = db_all(
     <a class="btn btn-primary" href="<?= url('/biblia.php') ?>">Começar a ler</a>
   </div>
 <?php else: ?>
+  <div class="personal-filter">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="search" id="notes-filter" placeholder="Filtrar por referência, versículo ou conteúdo da nota…" aria-label="Filtrar notas">
+    <span id="notes-filter-count"><?= count($notes) ?> visíveis</span>
+  </div>
   <?php foreach ($notes as $n): ?>
-    <section class="card note-card">
+    <section class="card note-card personal-filter-item" data-search="<?= e(mb_strtolower($n['book_name'] . ' ' . $n['chapter_number'] . ':' . $n['verse_number'] . ' ' . $n['translation'] . ' ' . ($n['verse_text'] ?? '') . ' ' . $n['note'])) ?>">
       <div class="card-head">
         <h3 class="entity-title">
           <span class="bk-badge"><?= brand_svg('', 12) ?></span>
@@ -61,6 +66,18 @@ $notes = db_all(
 ob_start();
 ?>
 <script>
+const notesFilter = document.getElementById('notes-filter');
+notesFilter?.addEventListener('input', () => {
+  const query = notesFilter.value.trim().toLocaleLowerCase('pt');
+  let visible = 0;
+  document.querySelectorAll('.personal-filter-item').forEach((item) => {
+    const liveNote = item.querySelector('.note-edit')?.value.toLocaleLowerCase('pt') || '';
+    const show = !query || item.dataset.search.includes(query) || liveNote.includes(query);
+    item.hidden = !show;
+    if (show) visible++;
+  });
+  document.getElementById('notes-filter-count').textContent = visible + ' visíveis';
+});
 async function bwSaveNote(id, btn) {
   const ta = document.querySelector('.note-edit[data-id="' + id + '"]');
   try {

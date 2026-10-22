@@ -32,8 +32,13 @@ $favs = db_all(
     <a class="btn btn-primary" href="<?= url('/biblia.php') ?>">Começar a ler</a>
   </div>
 <?php else: ?>
+  <div class="personal-filter">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="search" id="favorites-filter" placeholder="Filtrar por livro, referência ou texto…" aria-label="Filtrar favoritos">
+    <span id="favorites-filter-count"><?= count($favs) ?> visíveis</span>
+  </div>
   <?php foreach ($favs as $f): ?>
-    <section class="card entity-card">
+    <section class="card entity-card personal-filter-item" data-search="<?= e(mb_strtolower($f['book_name'] . ' ' . $f['chapter_number'] . ':' . $f['verse_number'] . ' ' . $f['translation'] . ' ' . $f['text'])) ?>">
       <div class="card-head">
         <h3 class="entity-title">
           <span class="bk-badge"><?= brand_svg('', 12) ?></span>
@@ -47,6 +52,10 @@ $favs = db_all(
         </button>
       </div>
       <p class="scripture-text"><?= e($f['text']) ?></p>
+      <div class="card-actions">
+        <button class="btn btn-sm" type="button" data-ref="<?= e($f['book_name'] . ' ' . $f['chapter_number'] . ':' . $f['verse_number'] . ' (' . $f['translation'] . ')') ?>" data-text="<?= e($f['text']) ?>" onclick="bwCopyFavorite(this)"><i class="fas fa-copy"></i> Copiar</button>
+        <button class="btn btn-sm" type="button" data-ref="<?= e($f['book_name'] . ' ' . $f['chapter_number'] . ':' . $f['verse_number'] . ' (' . $f['translation'] . ')') ?>" data-text="<?= e($f['text']) ?>" data-url="<?= e(url('/leitura.php?translation=' . urlencode($f['translation']) . '&book=' . $f['slug'] . '&chapter=' . $f['chapter_number'] . '&verse=' . $f['verse_number'])) ?>" onclick="bwShareFavorite(this)"><i class="fas fa-share-nodes"></i> Partilhar</button>
+      </div>
     </section>
   <?php endforeach; ?>
 <?php endif; ?>
@@ -55,6 +64,19 @@ $favs = db_all(
 ob_start();
 ?>
 <script>
+function bwCopyFavorite(button) { copyText(button.dataset.ref + ' — ' + button.dataset.text); }
+function bwShareFavorite(button) { shareText(button.dataset.ref, button.dataset.ref + ' — ' + button.dataset.text, button.dataset.url); }
+const favoriteFilter = document.getElementById('favorites-filter');
+favoriteFilter?.addEventListener('input', () => {
+  const query = favoriteFilter.value.trim().toLocaleLowerCase('pt');
+  let visible = 0;
+  document.querySelectorAll('.personal-filter-item').forEach((item) => {
+    const show = !query || item.dataset.search.includes(query);
+    item.hidden = !show;
+    if (show) visible++;
+  });
+  document.getElementById('favorites-filter-count').textContent = visible + ' visíveis';
+});
 async function bwRemoveFav(verseId, btn) {
   if (!confirm('Remover este versículo dos favoritos?')) return;
   try {

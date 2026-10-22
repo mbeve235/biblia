@@ -11,6 +11,7 @@ if (!defined('BASE_PATH')) {
 
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/settings.php';
+require_once __DIR__ . '/../includes/reading_plans.php';
 require_once __DIR__ . '/../utils/validador.php';
 
 $pass = 0;
@@ -159,6 +160,32 @@ check('"jo" (sem acento) → João', $p2['books'][2]['name'] === 'João');
 check('"Lamentações de Jeremias" → Lamentações', $p2['books'][3]['name'] === 'Lamentações');
 $r = $imp2->validate($p2);
 check('ficheiro pt-BR completo valida sem erros', $r['ok'] === true && $r['stats']['books'] === 4);
+
+// ---------------------------------------------------------------
+// 5) Rótulos dos dias dos planos de leitura
+// ---------------------------------------------------------------
+echo "5. Planos de leitura\n";
+check('intervalo no mesmo livro', reading_plan_day_label([
+    ['book' => 'Salmos', 'chapter' => 1],
+    ['book' => 'Salmos', 'chapter' => 2],
+    ['book' => 'Salmos', 'chapter' => 3],
+]) === 'Salmos 1–3');
+check('transição entre livros', reading_plan_day_label([
+    ['book' => 'Mateus', 'chapter' => 28],
+    ['book' => 'Marcos', 'chapter' => 1],
+]) === 'Mateus 28 · Marcos 1');
+check('sequência inclui hoje e dias anteriores', reading_streak_days(
+    ['2026-10-22', '2026-10-21', '2026-10-20'],
+    new DateTimeImmutable('2026-10-22')
+) === 3);
+check('sequência mantém-se quando hoje ainda não foi lido', reading_streak_days(
+    ['2026-10-21', '2026-10-20'],
+    new DateTimeImmutable('2026-10-22')
+) === 2);
+check('sequência termina perante uma falha', reading_streak_days(
+    ['2026-10-22', '2026-10-20'],
+    new DateTimeImmutable('2026-10-22')
+) === 1);
 
 // ---------------------------------------------------------------
 echo "\nResultado: $pass passaram, $fail falharam\n";

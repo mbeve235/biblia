@@ -15,8 +15,10 @@ As traduções são **dados, não código**: qualquer versão da Bíblia pode se
 | Pesquisa (palavras, frases, referências como `João 3:16`) | **Importação inteligente** com detecção de formato, validação, prévia, progresso e relatório |
 | Comparação de 2-4 traduções (colunas ou tabela) | Gestão de livros, capítulos e versículos |
 | Favoritos e notas pessoais | Gestão de utilizadores e papéis |
+| Planos de leitura, metas diárias e sequência de leitura | Gestão de utilizadores e papéis |
 | Histórico + "Continuar a leitura" | Exportação JSON/CSV por tradução |
-| Modo claro/escuro, letra ajustável, modo leitura | Backup SQL completo |
+| Modo claro/escuro, letra ajustável, foco e leitura em voz alta | Backup SQL completo |
+| Pesquisa, cópia e partilha rápida de versículos | Logs de actividade e de pesquisa |
 | Responsivo: desktop, tablet, telemóvel (menu inferior) | Logs de actividade e de pesquisa |
 
 ---

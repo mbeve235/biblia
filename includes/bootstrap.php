@@ -16,6 +16,7 @@ require_once BASE_PATH . '/includes/logger.php';
 require_once BASE_PATH . '/includes/mailer.php';
 require_once BASE_PATH . '/includes/auth.php';
 require_once BASE_PATH . '/includes/settings.php';
+require_once BASE_PATH . '/includes/reading_plans.php';
 
 // Cabeçalhos de segurança básicos
 if (!headers_sent()) {

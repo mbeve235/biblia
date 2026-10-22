@@ -109,6 +109,7 @@ $ogImage = url('assets/img/og.png');
   <div class="nav-label">Pessoal</div>
   <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'favoritos.php' ? 'active' : '' ?>" href="<?= url('/favoritos.php') ?>"><i class="fas fa-star"></i> Favoritos</a>
   <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'notas.php' ? 'active' : '' ?>" href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i> Notas</a>
+  <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'planos.php' ? 'active' : '' ?>" href="<?= url('/planos.php') ?>"><i class="fas fa-calendar-check"></i> Planos de leitura</a>
   <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'ministracoes.php' ? 'active' : '' ?>" href="<?= url('/ministracoes.php') ?>"><i class="fas fa-dove"></i> Ministrações</a>
   <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'historico.php' ? 'active' : '' ?>" href="<?= url('/historico.php') ?>"><i class="fas fa-clock-rotate-left"></i> Histórico</a>
 

@@ -9,7 +9,7 @@ $bottomItems = [
     '/pesquisa.php'   => ['magnifying-glass', 'Pesquisa', ['pesquisa.php']],
     '/favoritos.php'  => ['star', 'Favoritos', ['favoritos.php']],
 ];
-$morePages = ['notas.php', 'ministracoes.php', 'historico.php', 'perfil.php', 'login.php', 'registar.php', 'comparar.php'];
+$morePages = ['notas.php', 'planos.php', 'ministracoes.php', 'historico.php', 'perfil.php', 'login.php', 'registar.php', 'comparar.php'];
 ?>
 </main>
 

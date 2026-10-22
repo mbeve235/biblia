@@ -377,10 +377,49 @@ table.table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .public-scripture-ref { display: block; margin-top: .3rem; }
 .public-min-footer { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: .85rem; }
 
+/* Planos de leitura */
+.reading-plan-section { margin: 1.5rem 0; }
+.reading-plan-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.reading-plan-card { display: flex; align-items: center; gap: .85rem; min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text); transition: transform .15s, border-color .15s, box-shadow .15s; }
+.reading-plan-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-2px); text-decoration: none; }
+.reading-plan-card.active { background: linear-gradient(135deg, var(--surface), var(--accent-soft)); }
+.reading-plan-icon { display: grid; place-items: center; width: 48px; height: 48px; flex: none; border-radius: 14px; background: var(--accent-soft); color: var(--accent); font-size: 1.1rem; }
+.reading-plan-icon.accent-gold { background: var(--warning-soft); color: var(--warning); }
+.reading-plan-icon.accent-blue { background: rgba(55, 144, 231, .13); color: #378fe7; }
+.reading-plan-content { display: grid; min-width: 0; flex: 1; }
+.reading-plan-content > small { color: var(--accent); font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.reading-plan-content > strong { margin: .1rem 0; font-size: .98rem; }
+.reading-plan-content > span:not(.plan-progress) { color: var(--text-faint); font-size: .76rem; line-height: 1.35; }
+.reading-plan-content > em { margin-top: .25rem; color: var(--text-faint); font-size: .7rem; font-style: normal; }
+.reading-plan-card > i { color: var(--text-faint); font-size: .75rem; }
+.plan-progress { display: block; height: 6px; overflow: hidden; margin-top: .45rem; border-radius: 999px; background: var(--surface-2); }
+.plan-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), #9c6bff); }
+.plan-summary { display: grid; grid-template-columns: auto minmax(160px, 1fr) auto; align-items: center; gap: 1rem; }
+.plan-summary > div { display: flex; align-items: baseline; gap: .5rem; }
+.plan-summary > div strong { color: var(--accent); font-size: 1.7rem; }
+.plan-summary > div span { color: var(--text-soft); font-size: .78rem; }
+.plan-summary .plan-progress { margin: 0; }
+.plan-summary form { margin: 0; }
+.plan-days { display: grid; gap: .55rem; }
+.plan-day { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: .8rem; padding: .85rem 1rem; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.plan-day.current { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.plan-day.done { background: color-mix(in srgb, var(--success-soft) 45%, var(--surface)); }
+.plan-day-number { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: var(--surface-2); color: var(--text-soft); font-weight: 800; }
+.plan-day.done .plan-day-number { background: var(--success); color: #fff; }
+.plan-day-content { min-width: 0; }
+.plan-day-content > small { color: var(--text-faint); font-size: .67rem; font-weight: 800; text-transform: uppercase; }
+.plan-day-content h3 { margin: .05rem 0 .3rem; font-size: .95rem; }
+.plan-day-links { display: flex; flex-wrap: wrap; gap: .3rem; }
+.plan-day-links a { padding: .16rem .45rem; border-radius: 999px; background: var(--accent-soft); font-size: .7rem; font-weight: 700; }
+.plan-day-action { margin: 0; }
+.plan-restart { margin-top: 1.2rem; text-align: right; }
+
 /* ---------------------------------------------------------------------
    Ecrã de leitura
 --------------------------------------------------------------------- */
 .reader-header { margin-bottom: 1rem; }
+.reader-scroll-progress { position: fixed; z-index: 120; top: 0; left: var(--sidebar-w); right: 0; height: 3px; background: transparent; pointer-events: none; }
+.reader-scroll-progress span { display: block; width: 0; height: 100%; background: linear-gradient(90deg, var(--accent), #9c6bff); transition: width .08s linear; }
 .reader-eyebrow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--text-faint); font-size: .76rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .reader-translation { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); }
 .reader-translation-name { color: var(--text-soft); font-size: .9rem; margin: .25rem 0 .65rem; }
@@ -424,6 +463,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: .88rem; }
   position: relative; transition: background .15s, box-shadow .15s, transform .15s;
 }
 .verse:hover { background: var(--surface-2); }
+.verse.verse-speaking { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
 .verse .vnum {
   font-family: 'Segoe UI', system-ui, sans-serif;
   font-size: .68em; font-weight: 800; color: var(--accent);
@@ -927,6 +967,8 @@ table.compare-table td { font-family: var(--read-font); font-size: .95rem; }
 .search-result .ref { font-weight: 700; color: var(--accent); cursor: pointer; }
 .search-result .meta { font-size: .75rem; color: var(--text-faint); margin-left: .5rem; }
 .search-result .text { font-family: var(--read-font); font-size: 1rem; margin-top: .25rem; }
+.search-result-actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .65rem; }
+.search-result-actions .btn { color: var(--text-soft); }
 
 /* Pesquisa */
 .search-hero { max-width: 720px; margin-bottom: 1.1rem; }
@@ -1072,12 +1114,19 @@ input:disabled, select:disabled, textarea:disabled {
 .home-hero-mark span { position: absolute; top: 22px; left: 22px; opacity: .25; }
 .home-hero-mark > i { font-size: 3.2rem; transform: rotate(-4deg); }
 
-.home-personal-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; margin-bottom: 1.2rem; }
+.home-personal-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; margin-bottom: 1.2rem; }
 .home-personal-stats a { display: grid; grid-template-columns: 38px auto 1fr; align-items: center; gap: .35rem .7rem; min-width: 0; padding: .8rem 1rem; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text); }
 .home-personal-stats a:hover { border-color: var(--accent); text-decoration: none; transform: translateY(-1px); }
 .home-personal-stats i { grid-row: 1 / 3; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: var(--accent-soft); color: var(--accent); }
 .home-personal-stats strong { align-self: end; font-size: 1.15rem; line-height: 1; }
 .home-personal-stats span { align-self: start; color: var(--text-faint); font-size: .75rem; }
+.home-plan-today { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1rem; margin: 1.2rem 0; padding: 1.1rem 1.2rem; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border)); border-radius: 17px; background: linear-gradient(135deg, var(--surface), var(--accent-soft)); }
+.home-plan-icon { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 14px; background: var(--accent); color: #fff; box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 25%, transparent); }
+.home-plan-copy { display: grid; min-width: 0; }
+.home-plan-copy small { color: var(--accent); font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.home-plan-copy h2 { margin: .1rem 0; font-size: 1.08rem; }
+.home-plan-copy > span:not(.plan-progress) { color: var(--text-faint); font-size: .75rem; }
+.home-plan-copy .plan-progress { max-width: 420px; }
 
 .home-section { margin: 1.7rem 0; }
 .home-section-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: .8rem; }
@@ -1155,6 +1204,11 @@ input:disabled, select:disabled, textarea:disabled {
 
 /* Notas */
 .note-card { border-left: 4px solid var(--warning); }
+.personal-filter { position: relative; display: flex; align-items: center; gap: .6rem; margin-bottom: 1rem; }
+.personal-filter > i { position: absolute; left: .85rem; color: var(--text-faint); pointer-events: none; }
+.personal-filter input { min-width: 0; flex: 1; padding-left: 2.5rem; }
+.personal-filter span { color: var(--text-faint); font-size: .76rem; white-space: nowrap; }
+.personal-filter-item[hidden] { display: none; }
 
 /* ---------------------------------------------------------------------
    Responsivo
@@ -1162,6 +1216,7 @@ input:disabled, select:disabled, textarea:disabled {
 .bottom-nav { display: none; }
 
 @media (max-width: 1024px) {
+  .reader-scroll-progress { left: 0; }
   /* Sidebar fica ACIMA do topbar (60) para o menu ser clicável; backdrop logo abaixo.
      Antes: sidebar 50 < backdrop 55 → o backdrop cobria o menu aberto e nenhum item era clicável. */
   .sidebar { transform: translateX(-100%); visibility: hidden; transition: transform .22s ease, visibility 0s .22s; box-shadow: var(--shadow); z-index: 65; }
@@ -1183,6 +1238,8 @@ input:disabled, select:disabled, textarea:disabled {
 }
 
 @media (max-width: 640px) {
+  .personal-filter { flex-wrap: wrap; }
+  .personal-filter span { width: 100%; padding-left: .2rem; }
   /* Topbar mobile redesenhado: em vez de espremer tudo numa linha com ícones
      sem rótulo, cada elemento fica legível — a marca fica só com o ícone e o
      select de tradução ocupa o espaço que sobra. */
@@ -1204,6 +1261,8 @@ input:disabled, select:disabled, textarea:disabled {
   .home-personal-stats a { display: flex; flex-direction: column; gap: .25rem; padding: .65rem .25rem; text-align: center; }
   .home-personal-stats i { width: 34px; height: 34px; }
   .home-personal-stats strong { font-size: 1rem; }
+  .home-plan-today { grid-template-columns: auto minmax(0, 1fr); padding: .9rem; }
+  .home-plan-today .btn { grid-column: 1 / -1; width: 100%; }
   .home-actions { grid-template-columns: 1fr; gap: .5rem; }
   .home-dashboard-grid { grid-template-columns: 1fr; }
   .home-books { display: flex; overflow-x: auto; margin-inline: -1rem; padding: 0 1rem .45rem; scroll-snap-type: x proximity; scrollbar-width: none; }
@@ -1234,6 +1293,13 @@ input:disabled, select:disabled, textarea:disabled {
   .admin-main .stat-card { min-width: 0; padding: .75rem; }
   .admin-main .stat-card .value { font-size: 1.1rem; }
   .admin-nav-intro { margin-top: .2rem; }
+  .reading-plan-grid { grid-template-columns: 1fr; }
+  .plan-summary { grid-template-columns: 1fr; }
+  .plan-summary > div { justify-content: space-between; }
+  .plan-summary .btn { width: 100%; }
+  .plan-day { grid-template-columns: 38px minmax(0, 1fr); align-items: start; padding: .75rem; }
+  .plan-day-action { grid-column: 1 / -1; }
+  .plan-day-action .btn { width: 100%; }
 
   /* Botões só-ícone passam a mostrar rótulo legível no toque */
   .btn-icon-labeled i { display: none; }

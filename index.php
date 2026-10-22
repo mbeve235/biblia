@@ -9,6 +9,10 @@ $lastReading = null;
 $totals = null;
 $personalStats = null;
 $recentReadings = [];
+$readingStreak = 0;
+$activePlan = null;
+$activePlanToday = [];
+$activePlanDay = 0;
 
 if ($user) {
     $lastReading = db_one(
@@ -37,6 +41,37 @@ if ($user) {
          ORDER BY read_at DESC LIMIT 4',
         [$user['id']]
     );
+    $readingDates = db_all(
+        'SELECT DISTINCT DATE(read_at) AS reading_date
+         FROM reading_history WHERE user_id = ?
+         ORDER BY reading_date DESC LIMIT 366',
+        [$user['id']]
+    );
+    $readingStreak = reading_streak_days($readingDates);
+
+    $activePlan = db_one(
+        'SELECT p.*, up.id AS user_plan_id, up.started_at,
+                (SELECT COUNT(*) FROM reading_plan_progress rp WHERE rp.user_plan_id = up.id) AS completed_days
+         FROM user_reading_plans up
+         JOIN reading_plans p ON p.id = up.plan_id
+         WHERE up.user_id = ? AND up.status = "active" AND p.active = 1
+         ORDER BY up.updated_at DESC LIMIT 1',
+        [$user['id']]
+    );
+    if ($activePlan) {
+        $doneDays = [];
+        foreach (db_all('SELECT day_number FROM reading_plan_progress WHERE user_plan_id = ?', [$activePlan['user_plan_id']]) as $row) {
+            $doneDays[(int) $row['day_number']] = true;
+        }
+        $schedule = reading_plan_schedule($activePlan);
+        for ($day = 1; $day <= (int) $activePlan['duration_days']; $day++) {
+            if (!isset($doneDays[$day])) {
+                $activePlanDay = $day;
+                $activePlanToday = $schedule[$day] ?? [];
+                break;
+            }
+        }
+    }
 }
 
 $totals = db_one(
@@ -92,10 +127,26 @@ if ($user) {
 
 <?php if ($user && $personalStats): ?>
 <div class="home-personal-stats" aria-label="Resumo da sua conta">
+  <a href="<?= url('/historico.php') ?>"><i class="fas fa-fire"></i><strong><?= $readingStreak ?></strong><span><?= $readingStreak === 1 ? 'dia seguido' : 'dias seguidos' ?></span></a>
   <a href="<?= url('/favoritos.php') ?>"><i class="fas fa-star"></i><strong><?= (int) $personalStats['favorites'] ?></strong><span>Favoritos</span></a>
   <a href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i><strong><?= (int) $personalStats['notes'] ?></strong><span>Notas</span></a>
   <a href="<?= url('/ministracoes.php') ?>"><i class="fas fa-dove"></i><strong><?= (int) $personalStats['ministracoes'] ?></strong><span>Ministrações</span></a>
 </div>
+<?php endif; ?>
+
+<?php if ($user && $activePlan && $activePlanDay):
+  $activePlanPercent = (int) round(((int) $activePlan['completed_days'] / (int) $activePlan['duration_days']) * 100);
+?>
+<section class="home-plan-today" aria-labelledby="home-plan-title">
+  <span class="home-plan-icon"><i class="fas fa-calendar-check"></i></span>
+  <div class="home-plan-copy">
+    <small>Leitura de hoje · Dia <?= $activePlanDay ?></small>
+    <h2 id="home-plan-title"><?= e(reading_plan_day_label($activePlanToday)) ?></h2>
+    <span><?= e($activePlan['title']) ?> · <?= $activePlanPercent ?>% concluído</span>
+    <span class="plan-progress"><i style="width:<?= $activePlanPercent ?>%"></i></span>
+  </div>
+  <a class="btn btn-primary" href="<?= url('/planos.php?plan=' . urlencode($activePlan['slug']) . '#dia-' . $activePlanDay) ?>">Ler agora <i class="fas fa-arrow-right"></i></a>
+</section>
 <?php endif; ?>
 
 <?php
@@ -151,7 +202,7 @@ $votdUrl = $votd
     <a href="<?= url('/biblia.php') ?>"><i class="fas fa-book-open"></i><strong>Ler a Bíblia</strong><span>Escolher livro e capítulo</span></a>
     <a href="<?= url('/pesquisa.php') ?>"><i class="fas fa-magnifying-glass"></i><strong>Pesquisar</strong><span>Encontrar palavras e referências</span></a>
     <a href="<?= url('/comparar.php') ?>"><i class="fas fa-table-columns"></i><strong>Comparar</strong><span>Ver traduções lado a lado</span></a>
-    <a href="<?= url($user ? '/notas.php' : '/login.php') ?>"><i class="fas fa-pen-to-square"></i><strong>Minhas notas</strong><span>Guardar reflexões pessoais</span></a>
+    <a href="<?= url($user ? '/planos.php' : '/login.php') ?>"><i class="fas fa-calendar-check"></i><strong>Planos de leitura</strong><span>Criar um ritmo diário</span></a>
   </div>
 </section>
 

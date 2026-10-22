@@ -114,6 +114,8 @@ if ($user = current_user()) {
   </div>
 <?php else: ?>
 
+<div class="reader-scroll-progress" id="reader-scroll-progress" aria-hidden="true"><span></span></div>
+
 <div class="reader-header">
   <div class="reader-eyebrow">
     <span class="reader-translation"><i class="fas fa-language"></i> <?= e($trans['abbreviation']) ?></span>
@@ -140,6 +142,7 @@ if ($user = current_user()) {
   </div>
   <button class="btn btn-sm" data-theme-toggle type="button" title="Alternar tema"><i class="fas fa-moon"></i><span>Tema</span></button>
   <button class="btn btn-sm" id="verse-select-toggle" type="button" aria-pressed="false"><i class="fas fa-list-check"></i><span>Seleccionar</span></button>
+  <button class="btn btn-sm" id="reader-audio-toggle" type="button" aria-pressed="false" title="Ouvir este capítulo"><i class="fas fa-volume-high"></i><span>Ouvir</span></button>
   <a class="btn btn-sm" href="<?= url('/comparar.php?book=' . $book['slug'] . '&chapter=' . $chapNum) ?>" title="Comparar traduções"><i class="fas fa-table-columns"></i><span>Comparar</span></a>
   <button class="btn btn-sm" id="reading-focus-toggle" type="button" title="Modo de leitura focada" aria-pressed="false"><i class="fas fa-glasses"></i><span>Foco</span></button>
   <button class="btn btn-sm reading-exit" type="button" id="reading-focus-exit"><i class="fas fa-xmark"></i> Sair do modo leitura</button>
@@ -308,6 +311,70 @@ function setReadingFocus(enabled) {
 }
 focusToggle?.addEventListener('click', () => setReadingFocus(!document.body.classList.contains('reading-mode')));
 document.getElementById('reading-focus-exit')?.addEventListener('click', () => setReadingFocus(false));
+
+// ---- Progresso da leitura no capítulo ----
+const scrollProgress = document.querySelector('#reader-scroll-progress span');
+function updateReaderProgress() {
+  if (!scrollProgress) return;
+  const article = document.getElementById('verses');
+  if (!article) return;
+  const start = article.offsetTop;
+  const distance = Math.max(1, article.offsetHeight - window.innerHeight * .45);
+  const percent = Math.min(100, Math.max(0, ((window.scrollY - start + window.innerHeight * .3) / distance) * 100));
+  scrollProgress.style.width = percent.toFixed(1) + '%';
+}
+window.addEventListener('scroll', updateReaderProgress, { passive: true });
+window.addEventListener('resize', updateReaderProgress);
+updateReaderProgress();
+
+// ---- Leitura em voz alta, usando a voz instalada no dispositivo ----
+const audioToggle = document.getElementById('reader-audio-toggle');
+let audioIndex = 0;
+let audioActive = false;
+function stopChapterAudio() {
+  audioActive = false;
+  window.speechSynthesis?.cancel();
+  verseElements.forEach((verse) => verse.classList.remove('verse-speaking'));
+  audioToggle?.classList.remove('active');
+  audioToggle?.setAttribute('aria-pressed', 'false');
+  if (audioToggle) audioToggle.innerHTML = '<i class="fas fa-volume-high"></i><span>Ouvir</span>';
+}
+function speakNextVerse() {
+  if (!audioActive || audioIndex >= verseElements.length) return stopChapterAudio();
+  const verse = verseElements[audioIndex++];
+  verseElements.forEach((item) => item.classList.remove('verse-speaking'));
+  verse.classList.add('verse-speaking');
+  verse.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  const copy = verse.cloneNode(true);
+  copy.querySelectorAll('.vtools,.verse-select-indicator,.note-indicator').forEach((node) => node.remove());
+  const utterance = new SpeechSynthesisUtterance(copy.textContent.trim());
+  utterance.lang = 'pt-PT';
+  utterance.rate = .95;
+  utterance.onend = speakNextVerse;
+  utterance.onerror = stopChapterAudio;
+  window.speechSynthesis.speak(utterance);
+}
+audioToggle?.addEventListener('click', () => {
+  if (!('speechSynthesis' in window)) return toast('A leitura em voz alta não é suportada neste navegador.', 'error');
+  if (audioActive) return stopChapterAudio();
+  audioActive = true;
+  audioIndex = 0;
+  audioToggle.classList.add('active');
+  audioToggle.setAttribute('aria-pressed', 'true');
+  audioToggle.innerHTML = '<i class="fas fa-stop"></i><span>Parar</span>';
+  speakNextVerse();
+});
+window.addEventListener('beforeunload', stopChapterAudio);
+
+// Setas esquerda/direita mudam de capítulo fora dos campos de formulário.
+document.addEventListener('keydown', (event) => {
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+  if (event.target.closest('input, textarea, select, button, [contenteditable="true"]')) return;
+  const destination = event.key === 'ArrowLeft'
+    ? document.querySelector('.chapter-nav a:first-child')
+    : event.key === 'ArrowRight' ? document.querySelector('.chapter-nav a:last-child') : null;
+  if (destination) { event.preventDefault(); destination.click(); }
+});
 function bwToggleFav(btn, verseId) {
   VerseActions.toggleFavorite(verseId, btn).then(() => {
     btn.closest('.verse').classList.toggle('fav', VerseActions.isFav(verseId));
