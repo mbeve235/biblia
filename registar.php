@@ -2,7 +2,9 @@
 /**
  * Registo de nova conta.
  */
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/bootstrap.php';
+boot_session();
+$pageTitle = 'Criar conta';
 
 $error = null;
 $errorField = null;
@@ -32,6 +34,7 @@ if (settings_get('registration_enabled', '1') !== '1') {
         $ok = true;
     }
 }
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="auth-wrap">

@@ -4,7 +4,9 @@
  * 1) indicar o e-mail — o link de redefinição é enviado SÓ por e-mail
  *    (nunca mostrado no ecrã); 2) definir a nova palavra-passe pelo link recebido.
  */
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/bootstrap.php';
+boot_session();
+$pageTitle = 'Recuperar acesso';
 
 $step = 'request';
 $error = null;
@@ -63,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['password']) && $step
         // nada nem colocamos o link no ecrã — ele viaja exclusivamente por e-mail.
     }
 }
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="auth-wrap">

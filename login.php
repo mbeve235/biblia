@@ -2,7 +2,9 @@
 /**
  * Login.
  */
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/bootstrap.php';
+boot_session();
+$pageTitle = 'Entrar';
 
 $error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -12,12 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $after = $_SESSION['after_login'] ?? '';
         unset($_SESSION['after_login']);
         $target = $after ?: url('/index.php');
-        echo '<script>location.href=' . json_encode($target, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';</script>';
-        require_once __DIR__ . '/includes/footer.php';
+        header('Location: ' . $target);
         exit;
     }
 }
 $needLogin = ($_GET['msg'] ?? '') === 'needlogin';
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="auth-wrap">

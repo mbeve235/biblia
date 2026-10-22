@@ -1660,3 +1660,9 @@ body.reading-mode .reading-exit {
 .habit-days span.done { color:var(--accent); }.habit-days span.done>i { background:var(--accent); color:#fff; font-size:.7rem; }
 .habit-days small { font-size:.62rem; }
 @media(max-width:640px){.habit-overview{grid-template-columns:1fr}.habit-streak{border-right:0;border-bottom:1px solid var(--border);padding:0 0 .8rem}.habit-week{align-items:flex-start;flex-direction:column}.habit-days{width:100%;justify-content:space-between}}
+
+.app-auth .header-actions > :not(.auth-back) { display:none; }
+.app-auth .auth-aside > .brand,.app-auth .auth-mobile-brand { display:none; }
+.app-auth .main { min-height:calc(100vh - var(--topbar-h)); display:grid; align-items:center; padding-top:calc(var(--topbar-h) + 1.5rem); }
+.app-auth .auth-wrap { width:100%; }
+@media(max-width:640px){.app-auth .brand-name{display:inline}.app-auth .auth-back span{display:none}.app-auth .auth-shell{max-width:480px;margin:auto}.app-auth .auth-panel{background:var(--surface)}}
