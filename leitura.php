@@ -331,9 +331,27 @@ updateReaderProgress();
 const audioToggle = document.getElementById('reader-audio-toggle');
 let audioIndex = 0;
 let audioActive = false;
+let audioUtterance = null; // manter referência evita que alguns navegadores a descartem
+let portugueseVoice = null;
+
+function loadPortugueseVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  portugueseVoice = voices.find((voice) => /^pt-PT$/i.test(voice.lang))
+    || voices.find((voice) => /^pt(-|_)/i.test(voice.lang))
+    || voices.find((voice) => /portugu/i.test(voice.name))
+    || null;
+  return portugueseVoice;
+}
+if ('speechSynthesis' in window) {
+  loadPortugueseVoice();
+  window.speechSynthesis.addEventListener?.('voiceschanged', loadPortugueseVoice);
+}
+
 function stopChapterAudio() {
   audioActive = false;
   window.speechSynthesis?.cancel();
+  audioUtterance = null;
   verseElements.forEach((verse) => verse.classList.remove('verse-speaking'));
   audioToggle?.classList.remove('active');
   audioToggle?.setAttribute('aria-pressed', 'false');
@@ -347,22 +365,43 @@ function speakNextVerse() {
   verse.scrollIntoView({ block: 'center', behavior: 'smooth' });
   const copy = verse.cloneNode(true);
   copy.querySelectorAll('.vtools,.verse-select-indicator,.note-indicator').forEach((node) => node.remove());
-  const utterance = new SpeechSynthesisUtterance(copy.textContent.trim());
-  utterance.lang = 'pt-PT';
-  utterance.rate = .95;
-  utterance.onend = speakNextVerse;
-  utterance.onerror = stopChapterAudio;
-  window.speechSynthesis.speak(utterance);
+  audioUtterance = new SpeechSynthesisUtterance(copy.textContent.trim());
+  audioUtterance.lang = portugueseVoice?.lang || 'pt-PT';
+  if (portugueseVoice) audioUtterance.voice = portugueseVoice;
+  audioUtterance.rate = .92;
+  audioUtterance.pitch = 1;
+  audioUtterance.onend = () => {
+    audioUtterance = null;
+    speakNextVerse();
+  };
+  audioUtterance.onerror = (event) => {
+    const expected = event.error === 'canceled' || event.error === 'interrupted';
+    stopChapterAudio();
+    if (!expected) toast('Não foi possível iniciar a voz (' + (event.error || 'erro do dispositivo') + '). Verifique o volume e as definições de voz.', 'error', 6000);
+  };
+  window.speechSynthesis.resume();
+  window.speechSynthesis.speak(audioUtterance);
 }
 audioToggle?.addEventListener('click', () => {
-  if (!('speechSynthesis' in window)) return toast('A leitura em voz alta não é suportada neste navegador.', 'error');
+  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+    return toast('A leitura em voz alta não é suportada neste navegador. Experimente Chrome, Edge ou Safari actualizado.', 'error', 6000);
+  }
   if (audioActive) return stopChapterAudio();
+  if (!verseElements.length) return toast('Este capítulo ainda não possui texto para narrar.', 'error');
+  loadPortugueseVoice();
+  window.speechSynthesis.cancel();
   audioActive = true;
   audioIndex = 0;
   audioToggle.classList.add('active');
   audioToggle.setAttribute('aria-pressed', 'true');
   audioToggle.innerHTML = '<i class="fas fa-stop"></i><span>Parar</span>';
   speakNextVerse();
+  window.setTimeout(() => {
+    if (audioActive && !window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+      stopChapterAudio();
+      toast('O dispositivo não iniciou a voz. Confirme o volume e instale/active uma voz portuguesa nas definições do sistema.', 'error', 7000);
+    }
+  }, 1800);
 });
 window.addEventListener('beforeunload', stopChapterAudio);
 
