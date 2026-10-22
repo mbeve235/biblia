@@ -376,6 +376,65 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTheme(currentTheme());
   setFontSize(getFontSize());
 
+  // Formulários de autenticação: visibilidade, força e confirmação da senha.
+  document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const input = document.getElementById(button.dataset.passwordToggle);
+      if (!input) return;
+      const visible = input.type === 'text';
+      input.type = visible ? 'password' : 'text';
+      button.setAttribute('aria-label', visible ? 'Mostrar palavra-passe' : 'Ocultar palavra-passe');
+      const icon = button.querySelector('i');
+      if (icon) icon.className = visible ? 'fas fa-eye' : 'fas fa-eye-slash';
+      input.focus();
+    });
+  });
+
+  document.querySelectorAll('[data-password-strength]').forEach((input) => {
+    const meter = input.closest('.field')?.querySelector('.password-strength');
+    const updateStrength = () => {
+      const value = input.value;
+      let score = 0;
+      if (value.length >= 6) score++;
+      if (value.length >= 10) score++;
+      if (/[a-z]/i.test(value) && /\d/.test(value)) score++;
+      if (/[^a-z0-9]/i.test(value)) score++;
+      const labels = ['', 'Fraca', 'Razoável', 'Boa', 'Forte'];
+      if (meter) {
+        meter.dataset.score = String(score);
+        const label = meter.querySelector('small');
+        if (label) label.textContent = value ? labels[score] : 'Use letras, números e símbolos';
+      }
+    };
+    input.addEventListener('input', updateStrength);
+  });
+
+  document.querySelectorAll('[data-password-confirm]').forEach((input) => {
+    const original = document.getElementById(input.dataset.passwordConfirm);
+    const hint = input.closest('.field')?.querySelector('[data-confirm-hint]');
+    const checkMatch = () => {
+      const mismatch = !!input.value && input.value !== original?.value;
+      input.setCustomValidity(mismatch ? 'As palavras-passe não coincidem.' : '');
+      if (hint) {
+        hint.textContent = input.value ? (mismatch ? 'As palavras-passe não coincidem.' : 'As palavras-passe coincidem.') : '';
+        hint.className = 'field-hint ' + (mismatch ? 'error' : 'success');
+      }
+    };
+    input.addEventListener('input', checkMatch);
+    original?.addEventListener('input', checkMatch);
+  });
+
+  document.querySelectorAll('[data-auth-form]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      const button = form.querySelector('[data-loading-text]');
+      const label = button?.querySelector('span');
+      if (!button || !label) return;
+      label.textContent = button.dataset.loadingText;
+      button.classList.add('loading');
+      button.disabled = true;
+    });
+  });
+
   document.querySelectorAll('[data-theme-toggle]').forEach((el) =>
     el.addEventListener('click', (ev) => { ev.preventDefault(); toggleTheme(); }));
 
@@ -383,14 +442,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-font-dec]').forEach((el) => el.addEventListener('click', () => setFontSize(getFontSize() - 1)));
 
   // Sidebar em tablet/mobile
-  const toggles = document.querySelectorAll('.menu-toggle');
+  const toggles = document.querySelectorAll('.menu-toggle, [data-sidebar-toggle]');
+  let sidebarTrigger = null;
   const closeSidebar = () => {
     document.body.classList.remove('sidebar-open');
     toggles.forEach((t) => t.setAttribute('aria-expanded', 'false'));
+    if (sidebarTrigger && document.activeElement?.closest('#sidebar')) sidebarTrigger.focus();
+    sidebarTrigger = null;
   };
   toggles.forEach((t) => t.addEventListener('click', () => {
     const open = document.body.classList.toggle('sidebar-open');
-    t.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggles.forEach((toggle) => toggle.setAttribute('aria-expanded', open ? 'true' : 'false'));
+    sidebarTrigger = open ? t : null;
+    if (open) document.querySelector('#sidebar .nav-item')?.focus();
   }));
   document.querySelector('.sidebar-backdrop')?.addEventListener('click', closeSidebar);
 

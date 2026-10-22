@@ -21,25 +21,26 @@ $history = db_all(
 );
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Pessoal</div>
-  <h1><i class="fas fa-clock-rotate-left" style="color:var(--accent)"></i> Histórico de leitura</h1>
-</div>
+<header class="page-header">
+  <span class="page-kicker">Pessoal</span>
+  <div class="page-title-row"><span class="page-icon"><i class="fas fa-clock-rotate-left"></i></span><div><h1>Histórico de leitura</h1><p>Os capítulos que visitou recentemente.</p></div></div>
+</header>
 
 <?php if (!$history): ?>
   <div class="empty-state"><i class="fas fa-clock-rotate-left"></i>Sem histórico. Comece a ler para registar o seu progresso.</div>
 <?php else: ?>
-  <section class="card" style="padding:.4rem 1.2rem">
+  <section class="card content-list">
     <?php foreach ($history as $h): ?>
-      <div class="search-result" style="display:flex;align-items:center;gap:1rem">
-        <span class="bk-badge" style="width:26px;height:26px;border-radius:8px"><?= brand_svg('', 15) ?></span>
-        <div style="flex:1">
-          <a href="<?= url('/leitura.php?translation=' . urlencode($h['translation']) . '&book=' . $h['slug'] . '&chapter=' . (int) $h['chapter_number']) ?>" style="font-weight:700">
+      <div class="content-list-item">
+        <span class="content-list-icon"><?= brand_svg('', 15) ?></span>
+        <div class="content-list-main">
+          <a href="<?= url('/leitura.php?translation=' . urlencode($h['translation']) . '&book=' . $h['slug'] . '&chapter=' . (int) $h['chapter_number']) ?>">
             <?= e($h['book_name']) ?> <?= (int) $h['chapter_number'] ?>
           </a>
           <span class="badge badge-muted"><?= e($h['translation']) ?></span>
         </div>
-        <small style="color:var(--text-faint)"><?= fmt_datetime($h['read_at']) ?></small>
+        <small class="muted"><?= fmt_datetime($h['read_at']) ?></small>
+        <i class="fas fa-chevron-right content-list-arrow"></i>
       </div>
     <?php endforeach; ?>
   </section>

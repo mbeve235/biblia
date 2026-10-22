@@ -39,21 +39,21 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <?php if (!$m): ?>
-  <section class="card" style="text-align:center;padding:2.4rem">
-    <i class="fas fa-link-slash" style="font-size:2.2rem;color:var(--text-faint);display:block;margin-bottom:.8rem"></i>
+  <section class="card empty-state">
+    <i class="fas fa-link-slash"></i>
     <h1>Link indisponível</h1>
-    <p style="color:var(--text-soft)">Esta ministração não existe, foi despublicada pelo autor ou o endereço está incompleto.</p>
+    <p class="muted">Esta ministração não existe, foi despublicada pelo autor ou o endereço está incompleto.</p>
     <a class="btn btn-primary" href="<?= url('/index.php') ?>"><i class="fas fa-book-bible"></i> Ir para <?= e(APP_NAME) ?></a>
   </section>
 <?php else: ?>
-  <article class="card min-card" style="max-width:760px;margin:0 auto">
+  <article class="card min-card public-min-card">
     <div class="card-head">
-      <h2 style="color:var(--accent)">
-        <span class="bk-badge" style="vertical-align:-5px"><?= brand_svg('', 14) ?></span>
+      <h2 class="entity-title">
+        <span class="bk-badge"><?= brand_svg('', 14) ?></span>
         <?= e($m['title']) ?>
       </h2>
     </div>
-    <p style="color:var(--text-faint);font-size:.85rem;margin:.1rem 0 .9rem">
+    <p class="section-meta public-min-meta">
       <?php if ($author): ?>Por <strong><?= e($author) ?></strong> · <?php endif; ?>
       <?= fmt_datetime($m['updated_at']) ?>
     </p>
@@ -73,9 +73,9 @@ require_once __DIR__ . '/includes/header.php';
     }
     ?>
     <?php if ($v): ?>
-      <blockquote class="votd-text" style="color:var(--text);font-size:1.1rem;margin:.2rem 0 .9rem">
+      <blockquote class="public-scripture">
         “<?= e($v['text']) ?>”
-        <a class="min-ref" style="display:block;margin-top:.3rem"
+        <a class="min-ref public-scripture-ref"
            href="<?= url('/leitura.php?translation=' . urlencode($v['translation']) . '&book=' . $v['slug'] . '&chapter=' . (int) $v['chapter_number'] . '&verse=' . (int) $v['verse_number']) ?>">
           <?= e($v['book_name']) ?> <?= (int) $v['chapter_number'] ?>:<?= (int) $v['verse_number'] ?>
           <span class="badge badge-accent"><?= e($v['translation']) ?></span>
@@ -91,9 +91,9 @@ require_once __DIR__ . '/includes/header.php';
 
     <div class="min-body"><?= nl2br(e($m['body'])) ?></div>
 
-    <div class="votd-foot" style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)">
-      <span style="color:var(--text-faint);font-size:.85rem">
-        <i class="fas fa-share-nodes" style="color:var(--accent)"></i>
+    <div class="public-min-footer">
+      <span class="muted">
+        <i class="fas fa-share-nodes accent-icon"></i>
         Partilhado através de <strong><?= e(APP_NAME) ?></strong>
       </span>
       <a class="btn btn-sm btn-primary" href="<?= url('/biblia.php') ?>"><i class="fas fa-book-open"></i> Começar a ler</a>

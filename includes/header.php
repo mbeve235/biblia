@@ -85,7 +85,7 @@ $ogImage = url('assets/img/og.png');
     </select>
   </form>
 
-  <button class="btn btn-ghost btn-icon-labeled" data-theme-toggle aria-label="Alternar tema"><i class="fas fa-moon"></i> <span>Tema</span></button>
+  <button class="btn btn-ghost btn-icon-labeled topbar-theme" data-theme-toggle aria-label="Alternar tema"><i class="fas fa-moon"></i> <span>Tema</span></button>
 
   <?php if ($currentUser): ?>
     <a class="btn btn-ghost" href="<?= url('/perfil.php') ?>" title="Perfil"><i class="fas fa-user"></i></a>
@@ -127,6 +127,7 @@ $ogImage = url('assets/img/og.png');
   <?php endif; ?>
 
   <div class="nav-label">Leitura</div>
+  <button class="nav-item sidebar-theme-toggle" data-theme-toggle type="button"><i class="fas fa-moon"></i> Alternar tema</button>
   <button class="nav-item" data-font-dec type="button" style="width:100%;border:none;background:none;cursor:pointer"><i class="fas fa-minus"></i> Diminuir letra</button>
   <button class="nav-item" data-font-inc type="button" style="width:100%;border:none;background:none;cursor:pointer"><i class="fas fa-plus"></i> Aumentar letra</button>
   <span style="font-size:.72rem;color:var(--text-faint);padding:0 .7rem" id="font-size-label">17px</span>

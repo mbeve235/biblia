@@ -50,11 +50,10 @@ if ($selectedBook && $trans) {
 ?>
 
 <?php if ($selectedBook): ?>
-  <div class="reader-header">
-    <div class="crumb"><a href="<?= url('/biblia.php') ?>">Bíblia</a> · <?= $selectedBook['testament'] === 'AT' ? 'Antigo Testamento' : 'Novo Testamento' ?></div>
-    <h1><?= e($selectedBook['name']) ?></h1>
-    <p style="color:var(--text-soft)"><?= (int) $selectedBook['chapters_count'] ?> capítulos · tradução <strong><?= e($trans['abbreviation']) ?></strong></p>
-  </div>
+  <header class="page-header">
+    <span class="page-kicker"><a href="<?= url('/biblia.php') ?>">Bíblia</a> · <?= $selectedBook['testament'] === 'AT' ? 'Antigo Testamento' : 'Novo Testamento' ?></span>
+    <div class="page-title-row"><span class="page-icon"><i class="fas fa-book-open"></i></span><div><h1><?= e($selectedBook['name']) ?></h1><p><?= (int) $selectedBook['chapters_count'] ?> capítulos · tradução <strong><?= e($trans['abbreviation']) ?></strong></p></div></div>
+  </header>
 
   <div class="chapter-grid chapters-page">
     <?php for ($c = 1; $c <= (int) $selectedBook['chapters_count']; $c++): ?>
@@ -69,14 +68,13 @@ if ($selectedBook && $trans) {
     <div class="empty-state"><i class="fas fa-circle-exclamation"></i>Livro sem capítulos registados.</div>
   <?php endif; ?>
 
-  <p style="margin-top:1.4rem"><a href="<?= url('/biblia.php') ?>"><i class="fas fa-arrow-left"></i> Voltar aos livros</a></p>
+  <p class="page-back"><a href="<?= url('/biblia.php') ?>"><i class="fas fa-arrow-left"></i> Voltar aos livros</a></p>
 
 <?php else: ?>
-  <div class="reader-header">
-    <div class="crumb">Bíblia</div>
-    <h1>Escolha um livro</h1>
-    <p style="color:var(--text-soft)">66 livros · tradução <strong><?= e($trans['abbreviation'] ?? '—') ?></strong> · <?= e($trans['name'] ?? '') ?></p>
-  </div>
+  <header class="page-header">
+    <span class="page-kicker">Bíblia</span>
+    <div class="page-title-row"><span class="page-icon"><i class="fas fa-book-bible"></i></span><div><h1>Escolha um livro</h1><p>66 livros · tradução <strong><?= e($trans['abbreviation'] ?? '—') ?></strong> · <?= e($trans['name'] ?? '') ?></p></div></div>
+  </header>
 
   <?php foreach (['AT', 'NT'] as $test): ?>
     <?php $testGroups = array_filter($groups, fn($g) => $g['testament'] === $test); ?>
@@ -88,7 +86,7 @@ if ($selectedBook && $trans) {
         </h2>
       </div>
       <?php foreach ($testGroups as $g): ?>
-        <div class="nav-label" style="margin:.9rem .1rem .4rem"><?= e($g['name']) ?></div>
+        <div class="section-label"><?= e($g['name']) ?></div>
         <div class="book-grid">
           <?php foreach ($byGroup[(int) $g['id']] ?? [] as $b): ?>
             <a class="book-card" href="<?= url('/biblia.php?book=' . $b['slug'] . '&translation=' . urlencode($trans['abbreviation'] ?? '')) ?>">

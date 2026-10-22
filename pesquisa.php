@@ -28,6 +28,16 @@ require_once __DIR__ . '/includes/header.php';
 
 $translations = db_all('SELECT abbreviation, name FROM translations WHERE status = "active" ORDER BY name');
 $books = db_all('SELECT name, slug FROM books ORDER BY book_order');
+$recentSearches = [];
+$searchUser = current_user();
+if ($searchUser) {
+    $recentSearches = db_all(
+        'SELECT query, MAX(created_at) AS searched_at
+         FROM search_logs WHERE user_id = ?
+         GROUP BY query ORDER BY searched_at DESC LIMIT 6',
+        [$searchUser['id']]
+    );
+}
 
 $results = null;
 $isReference = false;
@@ -51,63 +61,92 @@ if ($q !== '') {
 }
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Bíblia</div>
-  <h1><i class="fas fa-magnifying-glass" style="color:var(--accent)"></i> Pesquisa bíblica</h1>
-  <p style="color:var(--text-soft)">Palavras, frases exactas ("entre aspas") ou referências como <em>João 3:16</em>.</p>
-</div>
+<header class="search-hero">
+  <span class="home-eyebrow">Encontre na Palavra</span>
+  <h1>Pesquisa bíblica</h1>
+  <p>Procure uma palavra, uma frase exacta ou escreva directamente uma referência.</p>
+</header>
 
-<section class="card">
-  <form method="get" class="search-bar">
-    <input type="search" name="q" placeholder="Ex.: amor, &quot;Deus amou o mundo&quot;, João 3:16" value="<?= e($q) ?>" autofocus>
-    <button class="btn btn-primary" type="submit"><i class="fas fa-magnifying-glass"></i> Pesquisar</button>
+<section class="card search-panel">
+  <form method="get" class="search-form" id="search-form">
+    <div class="search-main-field">
+      <i class="fas fa-magnifying-glass"></i>
+      <input type="search" name="q" aria-label="Termo de pesquisa" placeholder="Amor, &quot;Deus amou o mundo&quot; ou João 3:16" value="<?= e($q) ?>" autofocus required maxlength="100">
+      <?php if ($q !== ''): ?><a href="<?= url('/pesquisa.php') ?>" aria-label="Limpar pesquisa" title="Limpar"><i class="fas fa-xmark"></i></a><?php endif; ?>
+      <button class="btn btn-primary" type="submit"><span>Pesquisar</span><i class="fas fa-arrow-right"></i></button>
+    </div>
+    <div class="search-filters" aria-label="Filtros de pesquisa">
+      <label><span>Tradução</span><select name="translation"><option value="">Todas</option><?php foreach ($translations as $t): ?><option value="<?= e($t['abbreviation']) ?>" <?= $transAbbr === $t['abbreviation'] ? 'selected' : '' ?>><?= e($t['abbreviation']) ?> — <?= e($t['name']) ?></option><?php endforeach; ?></select></label>
+      <label><span>Livro</span><select name="book"><option value="">Todos os livros</option><?php foreach ($books as $b): ?><option value="<?= e($b['slug']) ?>" <?= $bookSlug === $b['slug'] ? 'selected' : '' ?>><?= e($b['name']) ?></option><?php endforeach; ?></select></label>
+      <label><span>Testamento</span><select name="testament"><option value="">Antigo e Novo</option><option value="AT" <?= $testament === 'AT' ? 'selected' : '' ?>>Antigo Testamento</option><option value="NT" <?= $testament === 'NT' ? 'selected' : '' ?>>Novo Testamento</option></select></label>
+      <?php if ($transAbbr !== '' || $bookSlug !== '' || $testament !== ''): ?><a class="search-clear-filters" href="<?= url('/pesquisa.php?q=' . urlencode($q)) ?>"><i class="fas fa-filter-circle-xmark"></i> Limpar filtros</a><?php endif; ?>
+    </div>
   </form>
-  <p style="font-size:.78rem;color:var(--text-faint);margin:.6rem 0 0">
-    Os filtros de tradução, livro e testamento aparecem abaixo do campo após o carregamento.
-  </p>
 </section>
 
+<?php if ($q === ''): ?>
+<section class="search-discovery">
+  <div class="search-tips card">
+    <div class="home-section-head compact"><div><span>Experimente</span><h2>Formas de pesquisar</h2></div></div>
+    <div class="search-examples">
+      <a href="<?= url('/pesquisa.php?q=amor') ?>"><i class="fas fa-font"></i><span><strong>Uma palavra</strong><small>amor</small></span></a>
+      <a href="<?= url('/pesquisa.php?q=' . urlencode('"Deus amou o mundo"')) ?>"><i class="fas fa-quote-left"></i><span><strong>Frase exacta</strong><small>“Deus amou o mundo”</small></span></a>
+      <a href="<?= url('/pesquisa.php?q=' . urlencode('João 3:16')) ?>"><i class="fas fa-location-dot"></i><span><strong>Referência</strong><small>João 3:16</small></span></a>
+    </div>
+  </div>
+  <div class="card search-recents">
+    <div class="home-section-head compact"><div><span>Histórico</span><h2>Pesquisas recentes</h2></div></div>
+    <div id="recent-searches">
+      <?php foreach ($recentSearches as $recent): ?><a href="<?= url('/pesquisa.php?q=' . urlencode($recent['query'])) ?>"><i class="fas fa-clock-rotate-left"></i><?= e($recent['query']) ?></a><?php endforeach; ?>
+      <?php if (!$recentSearches): ?><p class="search-recents-empty">As suas pesquisas recentes aparecerão aqui.</p><?php endif; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
 <?php if ($q !== '' && $results === null): ?>
-  <div class="alert alert-error">Não foi possível executar a pesquisa. Verifique a ligação à base de dados.</div>
+  <div class="alert alert-error" role="alert">Não foi possível executar a pesquisa. Verifique a ligação à base de dados.</div>
 <?php endif; ?>
 
 <?php if ($results !== null): ?>
   <?php if (($results['type'] ?? '') === 'reference'): ?>
-    <div class="alert alert-success">
+    <div class="alert alert-success search-reference-notice">
       Referência reconhecida — mostrando <?= count($results['results']) ?> resultado(s) para <strong><?= e($q) ?></strong>.
     </div>
     <?php foreach ($results['results'] as $r): ?>
-      <section class="card">
+      <section class="card search-reference-card">
         <div class="card-head">
-          <h3 style="color:var(--accent)"><span class="bk-badge" style="vertical-align:-5px"><?= brand_svg('', 12) ?></span> <?= e($r['reference']) ?> <span class="badge badge-accent"><?= e($r['translation']) ?></span></h3>
+          <h3><span class="bk-badge"><?= brand_svg('', 12) ?></span> <?= e($r['reference']) ?> <span class="badge badge-accent"><?= e($r['translation']) ?></span></h3>
           <a class="btn btn-sm" href="<?= url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse']) ?>">
             <i class="fas fa-book-open"></i> Ler capítulo
           </a>
         </div>
-        <p style="font-family:var(--read-font);font-size:1.1rem"><?= e($r['text']) ?></p>
+        <p><?= e($r['text']) ?></p>
       </section>
     <?php endforeach; ?>
   <?php else: ?>
-    <div class="card-head" style="margin:1.2rem 0 .6rem">
-      <h2><?= count($results['results'] ?? []) ?> resultado(s) para “<?= e($q) ?>”</h2>
+    <div class="search-results-head">
+      <div><span class="home-eyebrow">Resultados</span><h2><?= count($results['results'] ?? []) ?> resultado(s) para “<?= e($q) ?>”</h2></div>
+      <span class="search-filter-summary"><?php if ($transAbbr): ?><?= e($transAbbr) ?><?php endif; ?><?php if ($bookSlug): ?> · <?= e(db_one('SELECT name FROM books WHERE slug = ?', [$bookSlug])['name'] ?? '') ?><?php endif; ?><?php if ($testament): ?> · <?= e($testament) ?><?php endif; ?></span>
     </div>
 
     <?php if (empty($results['results'])): ?>
-      <div class="empty-state"><i class="fas fa-face-frown"></i>Nenhum resultado. Tente outras palavras ou verifique a tradução seleccionada.</div>
+      <div class="empty-state search-empty"><i class="fas fa-magnifying-glass-minus"></i><h3>Nenhum versículo encontrado</h3><p>Tente retirar um filtro, usar menos palavras ou verificar a escrita da referência.</p><div><a class="btn" href="<?= url('/pesquisa.php?q=' . urlencode($q)) ?>">Pesquisar sem filtros</a><a class="btn btn-primary" href="<?= url('/pesquisa.php') ?>">Nova pesquisa</a></div></div>
     <?php endif; ?>
 
-    <section class="card" style="padding:.4rem 1.2rem">
+    <?php if (!empty($results['results'])): ?><section class="card search-results-list">
       <?php foreach (($results['results'] ?? []) as $r): ?>
-        <div class="search-result">
-          <span class="ref" onclick="location.href='<?= url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse']) ?>'">
+        <article class="search-result">
+          <a class="ref" href="<?= url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse']) ?>">
             <span class="bk-badge" style="vertical-align:-4px"><?= brand_svg('', 11) ?></span>
             <?= e($r['reference']) ?>
-          </span>
+          </a>
           <span class="meta"><i class="fas fa-language"></i> <?= e($r['translation']) ?></span>
           <div class="text"><?= $r['highlight'] /* já escapado na API */ ?></div>
-        </div>
+          <a class="search-result-open" aria-label="Abrir <?= e($r['reference']) ?>" href="<?= url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse']) ?>"><i class="fas fa-arrow-right"></i></a>
+        </article>
       <?php endforeach; ?>
-    </section>
+    </section><?php endif; ?>
   <?php endif; ?>
 <?php endif; ?>
 
@@ -115,42 +154,27 @@ if ($q !== '') {
 ob_start();
 ?>
 <script>
-// Preencher filtros de tradução/livro/testamento no formulário
+// Visitantes: manter até seis pesquisas recentes apenas neste navegador.
 (function () {
-  const bar = document.querySelector('.search-bar');
-  const params = new URLSearchParams(location.search);
-
-  const mkSelect = (name, placeholder, options, current) => {
-    const s = document.createElement('select');
-    s.name = name;
-    const o = document.createElement('option');
-    o.value = ''; o.textContent = placeholder;
-    s.appendChild(o);
-    options.forEach(([v, t]) => {
-      const opt = document.createElement('option');
-      opt.value = v; opt.textContent = t;
-      if (String(v) === String(current)) opt.selected = true;
-      s.appendChild(opt);
-    });
-    return s;
-  };
-
-  fetch(BASE_URL + '/api/translations').then(r => r.json()).then(j => {
-    if (!j.success) return;
-    const opts = j.data.translations.map(t => [t.abbreviation, t.abbreviation]);
-    const sel = mkSelect('translation', 'Todas as traduções', opts, params.get('translation') || '');
-    sel.style.maxWidth = '160px';
-    bar.appendChild(sel);
-
-    const bookSel = mkSelect('book', 'Todos os livros',
-      j.data.books ? j.data.books.map(b => [b.slug, b.name]) : [], params.get('book') || '');
-    bookSel.style.maxWidth = '180px';
-    bar.appendChild(bookSel);
-
-    const testSel = mkSelect('testament', 'AT + NT', [['AT', 'Antigo Testamento'], ['NT', 'Novo Testamento']], params.get('testament') || '');
-    testSel.style.maxWidth = '160px';
-    bar.appendChild(testSel);
-  });
+  const query = <?= json_encode($q) ?>;
+  const loggedIn = <?= $searchUser ? 'true' : 'false' ?>;
+  if (!loggedIn && query) {
+    const recents = JSON.parse(localStorage.getItem('bw_recent_searches') || '[]');
+    localStorage.setItem('bw_recent_searches', JSON.stringify([query, ...recents.filter((item) => item !== query)].slice(0, 6)));
+  }
+  if (!loggedIn && !query) {
+    const box = document.getElementById('recent-searches');
+    const recents = JSON.parse(localStorage.getItem('bw_recent_searches') || '[]');
+    if (box && recents.length) {
+      box.innerHTML = '';
+      recents.forEach((item) => {
+        const link = document.createElement('a');
+        link.href = BASE_URL + '/pesquisa.php?q=' + encodeURIComponent(item);
+        link.innerHTML = '<i class="fas fa-clock-rotate-left"></i>' + escapeHtml(item);
+        box.appendChild(link);
+      });
+    }
+  }
 })();
 </script>
 <?php

@@ -20,11 +20,10 @@ $favs = db_all(
 );
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Pessoal</div>
-  <h1><i class="fas fa-star" style="color:var(--warning)"></i> Favoritos</h1>
-  <p style="color:var(--text-soft)"><?= count($favs) ?> versículo(s) guardado(s).</p>
-</div>
+<header class="page-header">
+  <span class="page-kicker">Pessoal</span>
+  <div class="page-title-row"><span class="page-icon page-icon-warning"><i class="fas fa-star"></i></span><div><h1>Favoritos</h1><p><?= count($favs) ?> versículo(s) guardado(s).</p></div></div>
+</header>
 
 <?php if (!$favs): ?>
   <div class="empty-state">
@@ -34,10 +33,10 @@ $favs = db_all(
   </div>
 <?php else: ?>
   <?php foreach ($favs as $f): ?>
-    <section class="card">
+    <section class="card entity-card">
       <div class="card-head">
-        <h3 style="color:var(--accent)">
-          <span class="bk-badge" style="vertical-align:-5px"><?= brand_svg('', 12) ?></span>
+        <h3 class="entity-title">
+          <span class="bk-badge"><?= brand_svg('', 12) ?></span>
           <a href="<?= url('/leitura.php?translation=' . urlencode($f['translation']) . '&book=' . $f['slug'] . '&chapter=' . (int) $f['chapter_number'] . '&verse=' . (int) $f['verse_number']) ?>">
             <?= e($f['book_name']) ?> <?= (int) $f['chapter_number'] ?>:<?= (int) $f['verse_number'] ?>
           </a>
@@ -47,7 +46,7 @@ $favs = db_all(
           <i class="fas fa-trash"></i> Remover
         </button>
       </div>
-      <p style="font-family:var(--read-font);font-size:1.05rem"><?= e($f['text']) ?></p>
+      <p class="scripture-text"><?= e($f['text']) ?></p>
     </section>
   <?php endforeach; ?>
 <?php endif; ?>

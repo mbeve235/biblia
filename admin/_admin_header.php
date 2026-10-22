@@ -23,12 +23,12 @@ $pageTitle = ($pageTitle ?? 'Administração') . ' — Admin';
 <?php endif; ?>
 <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=<?= filemtime(dirname(__DIR__) . '/assets/css/style.css') ?>">
 </head>
-<body>
+<body class="admin-body">
 
 <header class="topbar">
   <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="sidebar"><i class="fas fa-bars"></i></button>
   <a class="brand" href="<?= url('/admin/index.php') ?>">
-    <span class="logo" style="background:linear-gradient(135deg,#e67e22,#f39c12)"><?= brand_svg() ?></span>
+    <span class="logo admin-logo"><?= brand_svg() ?></span>
     <span>Admin · <?= e(APP_NAME) ?></span>
   </a>
   <div class="spacer"></div>
@@ -41,6 +41,7 @@ $pageTitle = ($pageTitle ?? 'Administração') . ' — Admin';
 <div class="sidebar-backdrop"></div>
 
 <nav class="sidebar" id="sidebar">
+  <div class="admin-nav-intro"><span><i class="fas fa-shield-halved"></i></span><div><strong>Administração</strong><small><?= e($currentUser['role']) ?></small></div></div>
   <div class="nav-label">Geral</div>
   <a class="nav-item <?= basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : '' ?>" href="<?= url('/admin/index.php') ?>"><i class="fas fa-gauge-high"></i> Dashboard</a>
 
@@ -59,4 +60,4 @@ $pageTitle = ($pageTitle ?? 'Administração') . ' — Admin';
   <?php endif; ?>
 </nav>
 
-<main class="main">
+<main class="main admin-main">

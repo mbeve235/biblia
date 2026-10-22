@@ -52,11 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $users = db_all('SELECT id, name, email, role, status, created_at, last_login FROM users ORDER BY created_at DESC');
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1><i class="fas fa-users" style="color:var(--accent)"></i> Utilizadores</h1>
-  <p style="color:var(--text-soft)">Administrador: controlo total · Editor: conteúdo e importações · Utilizador: leitura.</p>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Sistema</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-users"></i></span><div><h1>Utilizadores</h1><p>Gerir contas, papéis e estado de acesso.</p></div></div></header>
 
 <?php if ($error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endif; ?>
 <?php if ($ok): ?><div class="alert alert-success"><?= e($ok) ?></div><?php endif; ?>

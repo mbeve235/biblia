@@ -27,10 +27,7 @@ if ($viewId) {
 }
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1><i class="fas fa-clipboard-list" style="color:var(--accent)"></i> Importações</h1>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Conteúdo</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-clipboard-list"></i></span><div><h1>Importações</h1><p>Histórico, estado e problemas dos ficheiros processados.</p></div></div></header>
 
 <?php if ($viewImport): ?>
   <section class="card">

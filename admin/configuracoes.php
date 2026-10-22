@@ -28,10 +28,7 @@ $itemsPerPage  = settings_get('items_per_page', '50');
 $translations = db_all('SELECT abbreviation, name FROM translations ORDER BY name');
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1><i class="fas fa-gear" style="color:var(--accent)"></i> Configurações</h1>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Sistema</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-gear"></i></span><div><h1>Configurações</h1><p>Comportamento e identidade da aplicação.</p></div></div></header>
 
 <?php if ($ok): ?><div class="alert alert-success"><?= e($ok) ?></div><?php endif; ?>
 

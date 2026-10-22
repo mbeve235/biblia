@@ -45,11 +45,7 @@ $groups = db_all('SELECT * FROM book_groups ORDER BY testament, group_order');
 $books = db_all('SELECT b.*, g.name AS group_name FROM books b LEFT JOIN book_groups g ON g.id = b.group_id ORDER BY b.book_order');
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1><i class="fas fa-book" style="color:var(--accent)"></i> Livros (66)</h1>
-  <p style="color:var(--text-soft)">Ordem canónica, testamento, categorias e número de capítulos.</p>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Conteúdo</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-book"></i></span><div><h1>Livros (66)</h1><p>Ordem canónica, testamento, categorias e número de capítulos.</p></div></div></header>
 
 <?php if ($error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endif; ?>
 <?php if ($ok): ?><div class="alert alert-success"><?= e($ok) ?></div><?php endif; ?>

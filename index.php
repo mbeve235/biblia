@@ -7,6 +7,8 @@ require_once __DIR__ . '/includes/header.php';
 $user = current_user();
 $lastReading = null;
 $totals = null;
+$personalStats = null;
+$recentReadings = [];
 
 if ($user) {
     $lastReading = db_one(
@@ -16,6 +18,23 @@ if ($user) {
          JOIN translations t ON t.id = h.translation_id
          WHERE h.user_id = ?
          ORDER BY h.read_at DESC LIMIT 1',
+        [$user['id']]
+    );
+    $personalStats = db_one(
+        'SELECT (SELECT COUNT(*) FROM favorites WHERE user_id = ?) AS favorites,
+                (SELECT COUNT(*) FROM notes WHERE user_id = ?) AS notes,
+                (SELECT COUNT(*) FROM ministracoes WHERE user_id = ?) AS ministracoes',
+        [$user['id'], $user['id'], $user['id']]
+    );
+    $recentReadings = db_all(
+        'SELECT h.chapter_number, b.name AS book_name, b.slug, t.abbreviation AS translation,
+                MAX(h.read_at) AS read_at
+         FROM reading_history h
+         JOIN books b ON b.id = h.book_id
+         JOIN translations t ON t.id = h.translation_id
+         WHERE h.user_id = ?
+         GROUP BY h.translation_id, h.book_id, h.chapter_number, b.name, b.slug, t.abbreviation
+         ORDER BY read_at DESC LIMIT 4',
         [$user['id']]
     );
 }
@@ -41,30 +60,42 @@ if ($user) {
 }
 ?>
 
-<?php if ($lastReading): ?>
-  <section class="card" style="background:linear-gradient(120deg,var(--accent-soft),transparent 60%)">
-    <div class="card-head">
-      <h2><i class="fas fa-bookmark" style="color:var(--accent)"></i> Continuar a leitura</h2>
-    </div>
-    <p style="font-size:1.05rem">
-      <strong><?= e($lastReading['book_name']) ?> <?= (int) $lastReading['chapter_number'] ?></strong>
-      · tradução <?= e($lastReading['translation']) ?>
-    </p>
-    <a class="btn btn-primary" href="<?= url('/leitura.php?translation=' . urlencode($lastReading['translation']) . '&book=' . urlencode($lastReading['slug']) . '&chapter=' . (int) $lastReading['chapter_number']) ?>">
-      <i class="fas fa-play"></i> Continuar
-    </a>
-  </section>
-<?php elseif (!$user): ?>
-  <section class="card" style="text-align:center;padding:2.4rem">
-    <img src="<?= url('assets/img/logo.png') ?>" alt="<?= e(APP_NAME) ?>" width="72" height="72" style="width:72px;height:72px;border-radius:16px;margin-bottom:.9rem;box-shadow:var(--shadow)">
-    <h1>Bem-vindo à <?= e(APP_NAME) ?></h1>
-    <p style="color:var(--text-soft);max-width:520px;margin:0 auto 1.2rem">
-      Leia, pesquise e estude a Bíblia em várias traduções. Marque favoritos, crie notas
-      e continue a leitura de onde parou.
-    </p>
-    <a class="btn btn-primary" href="<?= url('/biblia.php') ?>"><i class="fas fa-book-open"></i> Começar a ler</a>
-    <a class="btn" href="<?= url('/registar.php') ?>">Criar conta gratuita</a>
-  </section>
+<section class="home-hero <?= $user ? 'home-hero-personal' : 'home-hero-guest' ?>">
+  <div class="home-hero-content">
+    <span class="home-eyebrow"><?= $user ? 'A sua jornada na Palavra' : 'Leitura e estudo bíblico' ?></span>
+    <?php if ($user): ?>
+      <h1>Olá, <?= e(explode(' ', trim($user['name']))[0]) ?>.</h1>
+      <?php if ($lastReading): ?>
+        <p>Continue de onde parou em <strong><?= e($lastReading['book_name']) ?> <?= (int) $lastReading['chapter_number'] ?></strong>, na tradução <?= e($lastReading['translation']) ?>.</p>
+        <div class="home-hero-actions">
+          <a class="btn btn-primary" href="<?= url('/leitura.php?translation=' . urlencode($lastReading['translation']) . '&book=' . urlencode($lastReading['slug']) . '&chapter=' . (int) $lastReading['chapter_number']) ?>"><i class="fas fa-play"></i> Continuar a leitura</a>
+          <a class="btn" href="<?= url('/biblia.php') ?>"><i class="fas fa-book-open"></i> Escolher outro livro</a>
+        </div>
+      <?php else: ?>
+        <p>Escolha um livro e comece hoje a sua jornada de leitura.</p>
+        <a class="btn btn-primary" href="<?= url('/biblia.php') ?>"><i class="fas fa-book-open"></i> Começar a ler</a>
+      <?php endif; ?>
+    <?php else: ?>
+      <h1>A Bíblia, mais próxima do seu dia.</h1>
+      <p>Leia, pesquise, compare traduções e organize os seus estudos num espaço simples e acolhedor.</p>
+      <div class="home-hero-actions">
+        <a class="btn btn-primary" href="<?= url('/biblia.php') ?>"><i class="fas fa-book-open"></i> Começar a ler</a>
+        <a class="btn" href="<?= url('/registar.php') ?>">Criar conta gratuita</a>
+      </div>
+    <?php endif; ?>
+  </div>
+  <div class="home-hero-mark" aria-hidden="true">
+    <span><?= brand_svg('', 46) ?></span>
+    <i class="fas fa-book-open"></i>
+  </div>
+</section>
+
+<?php if ($user && $personalStats): ?>
+<div class="home-personal-stats" aria-label="Resumo da sua conta">
+  <a href="<?= url('/favoritos.php') ?>"><i class="fas fa-star"></i><strong><?= (int) $personalStats['favorites'] ?></strong><span>Favoritos</span></a>
+  <a href="<?= url('/notas.php') ?>"><i class="fas fa-pen-to-square"></i><strong><?= (int) $personalStats['notes'] ?></strong><span>Notas</span></a>
+  <a href="<?= url('/ministracoes.php') ?>"><i class="fas fa-dove"></i><strong><?= (int) $personalStats['ministracoes'] ?></strong><span>Ministrações</span></a>
+</div>
 <?php endif; ?>
 
 <?php
@@ -114,40 +145,63 @@ $votdUrl = $votd
 </section>
 <?php endif; ?>
 
-<div class="stats-pills" style="margin:1.2rem 0">
-  <span class="pill"><i class="fas fa-language" style="color:var(--accent)"></i> <?= fmt_num((int) $totals['translations']) ?> <?= $totals['translations'] == 1 ? 'tradução' : 'traduções' ?></span>
-  <span class="pill"><i class="fas fa-book" style="color:var(--accent)"></i> <?= fmt_num((int) $totals['books']) ?> livros</span>
-  <span class="pill"><i class="fas fa-scroll" style="color:var(--accent)"></i> <?= fmt_num((int) $totals['verses']) ?> <?= $totals['verses'] == 1 ? 'versículo' : 'versículos' ?></span>
-</div>
+<section class="home-section">
+  <div class="home-section-head"><div><span>Ferramentas</span><h2>O que deseja fazer?</h2></div></div>
+  <div class="home-actions">
+    <a href="<?= url('/biblia.php') ?>"><i class="fas fa-book-open"></i><strong>Ler a Bíblia</strong><span>Escolher livro e capítulo</span></a>
+    <a href="<?= url('/pesquisa.php') ?>"><i class="fas fa-magnifying-glass"></i><strong>Pesquisar</strong><span>Encontrar palavras e referências</span></a>
+    <a href="<?= url('/comparar.php') ?>"><i class="fas fa-table-columns"></i><strong>Comparar</strong><span>Ver traduções lado a lado</span></a>
+    <a href="<?= url($user ? '/notas.php' : '/login.php') ?>"><i class="fas fa-pen-to-square"></i><strong>Minhas notas</strong><span>Guardar reflexões pessoais</span></a>
+  </div>
+</section>
 
-<div class="grid grid-2">
-  <section class="card">
-    <div class="card-head"><h3><i class="fas fa-bolt"></i> Acesso rápido</h3></div>
-    <div class="grid grid-2" style="gap:.5rem">
-      <?php
-      $quick = db_all('SELECT name, slug, testament FROM books WHERE slug IN ("genesis","salmos","proverbios","isaias","mateus","joao","romanos","apocalipse") ORDER BY book_order');
-      foreach ($quick as $b): ?>
-        <a class="btn" style="justify-content:space-between" href="<?= url('/biblia.php?book=' . urlencode($b['slug'])) ?>">
-          <span class="bk-name"><span class="bk-badge"><?= brand_svg('', 12) ?></span><?= e($b['name']) ?></span>
-          <small style="color:var(--text-faint)"><?= $b['testament'] ?></small>
+<?php if ($user && ($recentReadings || $favVerses)): ?>
+<div class="home-dashboard-grid">
+  <?php if ($recentReadings): ?>
+  <section class="card home-list-card">
+    <div class="home-section-head compact"><div><span>Histórico</span><h2>Leituras recentes</h2></div><a href="<?= url('/historico.php') ?>">Ver tudo</a></div>
+    <div class="home-reading-list">
+      <?php foreach ($recentReadings as $reading): ?>
+      <a href="<?= url('/leitura.php?translation=' . urlencode($reading['translation']) . '&book=' . urlencode($reading['slug']) . '&chapter=' . (int) $reading['chapter_number']) ?>">
+        <span class="home-list-icon"><i class="fas fa-book-open"></i></span>
+        <span><strong><?= e($reading['book_name']) ?> <?= (int) $reading['chapter_number'] ?></strong><small><?= e($reading['translation']) ?> · <?= e(fmt_datetime($reading['read_at'])) ?></small></span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <?php endforeach; ?>
+    </div>
+  </section>
+  <?php endif; ?>
+
+  <?php if ($favVerses): ?>
+  <section class="card home-list-card">
+    <div class="home-section-head compact"><div><span>Guardados</span><h2>Favoritos recentes</h2></div><a href="<?= url('/favoritos.php') ?>">Ver tudo</a></div>
+    <div class="home-favorites-list">
+      <?php foreach ($favVerses as $fv): ?>
+        <a href="<?= url('/leitura.php?translation=' . urlencode($fv['translation']) . '&book=' . urlencode($fv['slug']) . '&chapter=' . (int) $fv['chapter_number']) . '#v' . (int) $fv['verse_number'] ?>">
+          <i class="fas fa-quote-left"></i><span>“<?= e(excerpt($fv['text'], 105)) ?>”<small><?= e($fv['book_name']) ?> <?= (int) $fv['chapter_number'] ?>:<?= (int) $fv['verse_number'] ?></small></span>
         </a>
       <?php endforeach; ?>
     </div>
   </section>
-
-  <?php if ($favVerses): ?>
-  <section class="card">
-    <div class="card-head"><h3><i class="fas fa-star" style="color:var(--warning)"></i> Favoritos recentes</h3></div>
-    <?php foreach ($favVerses as $fv): ?>
-      <p style="font-family:var(--read-font);font-size:1rem">
-        “<?= e(excerpt($fv['text'], 120)) ?>”
-        <a href="<?= url('/leitura.php?translation=' . urlencode($fv['translation']) . '&book=' . urlencode($fv['slug']) . '&chapter=' . (int) $fv['chapter_number']) . '#v' . (int) $fv['verse_number'] ?>">
-          <small>— <?= e($fv['book_name']) ?> <?= (int) $fv['chapter_number'] ?>:<?= (int) $fv['verse_number'] ?></small>
-        </a>
-      </p>
-    <?php endforeach; ?>
-  </section>
   <?php endif; ?>
+</div>
+<?php endif; ?>
+
+<section class="home-section">
+  <div class="home-section-head"><div><span>Explorar</span><h2>Livros para começar</h2></div><a href="<?= url('/biblia.php') ?>">Ver os 66 livros</a></div>
+  <div class="home-books">
+    <?php
+    $quick = db_all('SELECT name, slug, testament FROM books WHERE slug IN ("genesis","salmos","proverbios","isaias","mateus","joao","romanos","apocalipse") ORDER BY book_order');
+    foreach ($quick as $b): ?>
+      <a href="<?= url('/biblia.php?book=' . urlencode($b['slug'])) ?>"><span class="bk-badge"><?= brand_svg('', 12) ?></span><strong><?= e($b['name']) ?></strong><small><?= e($b['testament']) ?></small></a>
+    <?php endforeach; ?>
+  </div>
+</section>
+
+<div class="stats-pills home-platform-stats">
+  <span class="pill"><i class="fas fa-language"></i> <?= fmt_num((int) $totals['translations']) ?> <?= $totals['translations'] == 1 ? 'tradução' : 'traduções' ?></span>
+  <span class="pill"><i class="fas fa-book"></i> <?= fmt_num((int) $totals['books']) ?> livros</span>
+  <span class="pill"><i class="fas fa-scroll"></i> <?= fmt_num((int) $totals['verses']) ?> <?= $totals['verses'] == 1 ? 'versículo' : 'versículos' ?></span>
 </div>
 
 <?php

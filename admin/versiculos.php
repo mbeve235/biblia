@@ -43,11 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1><i class="fas fa-scroll" style="color:var(--accent)"></i> Versículos</h1>
-  <p style="color:var(--text-soft)">Consultar e corrigir versículos de qualquer tradução.</p>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Conteúdo</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-scroll"></i></span><div><h1>Versículos</h1><p>Consultar e corrigir versículos de qualquer tradução.</p></div></div></header>
 
 <?php if ($ok): ?><div class="alert alert-success"><?= e($ok) ?></div><?php endif; ?>
 

@@ -4,21 +4,24 @@
  */
 $currentFile = basename($_SERVER['PHP_SELF']);
 $bottomItems = [
-    '/index.php'      => ['house', 'Início'],
-    '/biblia.php'     => ['book-open', 'Bíblia'],
-    '/pesquisa.php'   => ['magnifying-glass', 'Pesquisa'],
-    '/favoritos.php'  => ['star', 'Favoritos'],
-    '/notas.php'      => ['pen-to-square', 'Notas'],
+    '/index.php'      => ['house', 'Início', ['index.php']],
+    '/biblia.php'     => ['book-open', 'Bíblia', ['biblia.php', 'leitura.php']],
+    '/pesquisa.php'   => ['magnifying-glass', 'Pesquisa', ['pesquisa.php']],
+    '/favoritos.php'  => ['star', 'Favoritos', ['favoritos.php']],
 ];
+$morePages = ['notas.php', 'ministracoes.php', 'historico.php', 'perfil.php', 'login.php', 'registar.php', 'comparar.php'];
 ?>
 </main>
 
-<nav class="bottom-nav">
-  <?php foreach ($bottomItems as $path => [$icon, $label]): ?>
-    <a href="<?= url($path) ?>" class="<?= $currentFile === basename($path) ? 'active' : '' ?>">
+<nav class="bottom-nav" aria-label="Navegação principal móvel">
+  <?php foreach ($bottomItems as $path => [$icon, $label, $pages]): $isActive = in_array($currentFile, $pages, true); ?>
+    <a href="<?= url($path) ?>" class="<?= $isActive ? 'active' : '' ?>" <?= $isActive ? 'aria-current="page"' : '' ?>>
       <i class="fas fa-<?= $icon ?>"></i><span><?= $label ?></span>
     </a>
   <?php endforeach; ?>
+  <button type="button" data-sidebar-toggle class="<?= in_array($currentFile, $morePages, true) ? 'active' : '' ?>" aria-label="Abrir mais opções" aria-expanded="false" aria-controls="sidebar">
+    <i class="fas fa-bars"></i><span>Mais</span>
+  </button>
 </nav>
 
 <!-- Modal de selecção de livro/capítulo (leitor) — mesmo design do selector das ministrações -->

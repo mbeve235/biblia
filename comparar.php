@@ -55,15 +55,14 @@ ksort($verseNumbers);
 $verseNumbers = array_keys($verseNumbers);
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Bíblia</div>
-  <h1><i class="fas fa-table-columns" style="color:var(--accent)"></i> Comparar traduções</h1>
-  <?php if ($book): ?><p style="color:var(--text-soft)"><?= e($book['name']) ?> <?= $chapNum ?></p><?php endif; ?>
-</div>
+<header class="page-header">
+  <span class="page-kicker">Bíblia</span>
+  <div class="page-title-row"><span class="page-icon"><i class="fas fa-table-columns"></i></span><div><h1>Comparar traduções</h1><?php if ($book): ?><p><?= e($book['name']) ?> <?= $chapNum ?></p><?php endif; ?></div></div>
+</header>
 
 <section class="card">
-  <form method="get" id="compare-form" style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end">
-    <label class="field" style="margin:0;flex:1;min-width:170px">
+  <form method="get" id="compare-form" class="compare-form">
+    <label class="field compare-book-field">
       <span>Livro</span>
       <select name="book" onchange="this.form.chapter.value=1;this.form.submit()">
         <?php foreach ($books as $b): ?>
@@ -71,22 +70,22 @@ $verseNumbers = array_keys($verseNumbers);
         <?php endforeach; ?>
       </select>
     </label>
-    <label class="field" style="margin:0;width:90px">
+    <label class="field compare-chapter-field">
       <span>Capítulo</span>
       <input type="number" name="chapter" min="1" max="<?= $book ? (int) $book['chapters_count'] : 150 ?>" value="<?= $chapNum ?>">
     </label>
-    <label class="field" style="margin:0;width:130px">
+    <label class="field compare-layout-field">
       <span>Disposição</span>
       <select name="layout" onchange="this.form.submit()">
         <option value="grid" <?= $layout === 'grid' ? 'selected' : '' ?>>Colunas</option>
         <option value="table" <?= $layout === 'table' ? 'selected' : '' ?>>Tabela</option>
       </select>
     </label>
-    <div style="flex:2;min-width:260px">
-      <span style="display:block;font-size:.82rem;font-weight:600;color:var(--text-soft);margin-bottom:.3rem">Traduções (até 4)</span>
-      <div style="display:flex;gap:.35rem;flex-wrap:wrap">
+    <div class="compare-translations-field">
+      <span class="field-label">Traduções (até 4)</span>
+      <div class="choice-chips">
         <?php foreach ($translations as $t): ?>
-          <label class="badge badge-muted" style="cursor:pointer;font-weight:500;font-size:.8rem">
+          <label class="choice-chip">
             <input type="checkbox" name="translations[]" value="<?= e($t['abbreviation']) ?>"
               <?= in_array($t['abbreviation'], $selTrans, true) ? 'checked' : '' ?>>
             <?= e($t['abbreviation']) ?>
@@ -105,10 +104,10 @@ $verseNumbers = array_keys($verseNumbers);
 <?php else: ?>
 
   <?php if ($layout === 'grid'): ?>
-    <div class="compare-grid" style="grid-template-columns:repeat(<?= min(4, count($columnData)) ?>,1fr)">
+    <div class="compare-grid compare-cols-<?= min(4, count($columnData)) ?>">
       <?php foreach ($columnData as $abbr => $verses): ?>
         <div class="compare-col">
-          <h3><span class="bk-badge"><?= brand_svg('', 12) ?></span> <?= e($abbr) ?> <small style="color:var(--text-faint);font-weight:400"><?= e($abbrToName[$abbr] ?? '') ?></small></h3>
+          <h3><span class="bk-badge"><?= brand_svg('', 12) ?></span> <?= e($abbr) ?> <small class="muted normal-weight"><?= e($abbrToName[$abbr] ?? '') ?></small></h3>
           <?php foreach ($verses as $num => $text): ?>
             <div class="compare-verse">
               <span class="ref"><?= e($book['name']) ?> <?= $chapNum ?>:<?= $num ?></span>
@@ -119,10 +118,10 @@ $verseNumbers = array_keys($verseNumbers);
       <?php endforeach; ?>
     </div>
   <?php else: ?>
-    <section class="card table-wrap" style="padding:0">
+    <section class="card table-wrap flush-card">
       <table class="table compare-table">
         <thead>
-          <tr><th style="width:90px">Versículo</th>
+          <tr><th class="compare-ref-col">Versículo</th>
               <?php foreach ($columnData as $abbr => $v): ?><th><?= e($abbr) ?></th><?php endforeach; ?>
           </tr>
         </thead>
@@ -131,7 +130,7 @@ $verseNumbers = array_keys($verseNumbers);
             <tr>
               <td><strong><?= e($book['name']) ?> <?= $chapNum ?>:<?= $num ?></strong></td>
               <?php foreach ($columnData as $abbr => $verses): ?>
-                <td><?= isset($verses[$num]) ? e($verses[$num]) : '<em style="color:var(--text-faint)">—</em>' ?></td>
+                <td><?= isset($verses[$num]) ? e($verses[$num]) : '<em class="muted">—</em>' ?></td>
               <?php endforeach; ?>
             </tr>
           <?php endforeach; ?>

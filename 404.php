@@ -37,27 +37,27 @@ $noindex   = true;
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="empty-state" style="padding-top:4rem">
+<div class="empty-state error-page-state">
   <i class="fas fa-book-bookmark"></i>
-  <h1 style="font-size:2.6rem;margin:.2rem 0">404</h1>
+  <h1 class="error-code">404</h1>
   <p><strong>Esta página não existe (ou o endereço está mal escrito).</strong></p>
-  <p style="color:var(--text-soft);max-width:420px;margin:0 auto 1.4rem">
+  <p class="error-page-copy">
     Mas a leitura não tem de parar — continue onde ficou ou salte para um livro:
   </p>
 </div>
 
-<section class="card" style="max-width:520px;margin:0 auto 1.2rem;text-align:center">
-  <h3><i class="fas fa-bookmark" style="color:var(--accent)"></i> Continuar a leitura</h3>
-  <p style="font-size:1.05rem;margin:.6rem 0 1rem">
+<section class="card narrow-card centered-card">
+  <h3><i class="fas fa-bookmark accent-icon"></i> Continuar a leitura</h3>
+  <p class="lead-compact">
     <strong><?= e($resume['book_name']) ?> <?= (int) $resume['chapter_number'] ?></strong>
     <?php if (!empty($resume['translation'])): ?>· <?= e($resume['translation']) ?><?php endif; ?>
   </p>
   <a class="btn btn-primary btn-block" href="<?= $resumeUrl ?>"><i class="fas fa-play"></i> Continuar</a>
 </section>
 
-<section class="card" style="max-width:520px;margin:0 auto;text-align:center">
-  <h3><i class="fas fa-compass" style="color:var(--accent)"></i> Ir para</h3>
-  <div class="grid grid-2" style="gap:.5rem;margin-top:.8rem">
+<section class="card narrow-card centered-card">
+  <h3><i class="fas fa-compass accent-icon"></i> Ir para</h3>
+  <div class="grid grid-2 compact-grid">
     <?php foreach ($quick as $b): ?>
       <a class="book-card" href="<?= url('/biblia.php?book=' . $b['slug']) ?>">
         <span><?= e($b['name']) ?></span>
@@ -65,7 +65,7 @@ require_once __DIR__ . '/includes/header.php';
       </a>
     <?php endforeach; ?>
   </div>
-  <form action="<?= url('/pesquisa.php') ?>" method="get" class="search-bar" style="margin-top:1rem">
+  <form action="<?= url('/pesquisa.php') ?>" method="get" class="search-bar spaced-top">
     <input type="search" name="q" placeholder="Ou pesquise um versículo…">
     <button class="btn" type="submit"><i class="fas fa-magnifying-glass"></i></button>
   </form>

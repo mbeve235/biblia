@@ -12,11 +12,7 @@ $translations = db_all(
 );
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1><i class="fas fa-database" style="color:var(--accent)"></i> Backup & Exportações</h1>
-  <p style="color:var(--text-soft)">Descarregar conteúdos em JSON/CSV e backup SQL completo (administradores).</p>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Sistema</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-database"></i></span><div><h1>Backup & Exportações</h1><p>Descarregar conteúdos em JSON/CSV e backup SQL completo.</p></div></div></header>
 
 <section class="card">
   <div class="card-head"><h3>Exportar traduções</h3></div>

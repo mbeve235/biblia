@@ -75,11 +75,7 @@ $rows = db_all("
 ");
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1><i class="fas fa-language" style="color:var(--accent)"></i> Traduções</h1>
-  <p style="color:var(--text-soft)">Gerir as versões da Bíblia disponíveis na aplicação.</p>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Conteúdo</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-language"></i></span><div><h1>Traduções</h1><p>Gerir as versões da Bíblia disponíveis na aplicação.</p></div></div></header>
 
 <?php if ($error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endif; ?>
 <?php if ($ok): ?><div class="alert alert-success"><?= e($ok) ?></div><?php endif; ?>

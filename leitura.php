@@ -52,6 +52,9 @@ if (!$book || !$chapterRow) {
 
 require_once __DIR__ . '/includes/header.php';
 
+$chapterTotal = max(1, (int) ($book['chapters_count'] ?? 1));
+$chapterProgress = min(100, max(0, ($chapNum / $chapterTotal) * 100));
+
 // Navegação prev/next
 $prevLink = $nextLink = null;
 if ($book) {
@@ -112,7 +115,10 @@ if ($user = current_user()) {
 <?php else: ?>
 
 <div class="reader-header">
-  <div class="crumb">TRADUÇÃO: <?= e($trans['abbreviation']) ?></div>
+  <div class="reader-eyebrow">
+    <span class="reader-translation"><i class="fas fa-language"></i> <?= e($trans['abbreviation']) ?></span>
+    <span>Capítulo <?= $chapNum ?> de <?= $chapterTotal ?></span>
+  </div>
   <h1>
     <a href="#" data-open-books class="book-switcher" title="Trocar de livro ou capítulo" aria-haspopup="dialog" aria-label="Trocar de livro ou capítulo — actualmente em <?= e($book['name']) ?> <?= $chapNum ?>">
       <i class="fas fa-book-bible"></i>
@@ -120,16 +126,23 @@ if ($user = current_user()) {
       <i class="fas fa-chevron-down chv"></i>
     </a>
   </h1>
-  <p style="color:var(--text-soft);font-size:.9rem"><?= e($trans['name']) ?></p>
+  <p class="reader-translation-name"><?= e($trans['name']) ?></p>
+  <div class="reader-progress" aria-label="Progresso neste livro: <?= (int) round($chapterProgress) ?>%">
+    <span style="width:<?= number_format($chapterProgress, 2, '.', '') ?>%"></span>
+  </div>
 </div>
 
-<div class="reader-controls">
-  <button class="btn btn-sm" data-font-dec type="button" title="Diminuir letra"><i class="fas fa-minus"></i></button>
-  <button class="btn btn-sm" data-font-inc type="button" title="Aumentar letra"><i class="fas fa-plus"></i></button>
-  <button class="btn btn-sm" data-theme-toggle type="button" title="Modo claro/escuro"><i class="fas fa-moon"></i></button>
-  <a class="btn btn-sm" href="<?= url('/comparar.php?book=' . $book['slug'] . '&chapter=' . $chapNum) ?>" title="Comparar traduções"><i class="fas fa-table-columns"></i> Comparar</a>
-  <button class="btn btn-sm" type="button" onclick="document.body.classList.toggle('reading-mode')" title="Modo leitura focada"><i class="fas fa-glasses"></i> Foco</button>
-  <button class="btn btn-sm reading-exit" type="button" onclick="document.body.classList.remove('reading-mode')"><i class="fas fa-xmark"></i> Sair do modo leitura</button>
+<div class="reader-controls" aria-label="Ferramentas de leitura">
+  <div class="reader-control-group" aria-label="Tamanho do texto">
+    <button class="btn btn-sm" data-font-dec type="button" title="Diminuir letra" aria-label="Diminuir letra"><i class="fas fa-minus"></i></button>
+    <span class="reader-size-label" aria-hidden="true">Texto</span>
+    <button class="btn btn-sm" data-font-inc type="button" title="Aumentar letra" aria-label="Aumentar letra"><i class="fas fa-plus"></i></button>
+  </div>
+  <button class="btn btn-sm" data-theme-toggle type="button" title="Alternar tema"><i class="fas fa-moon"></i><span>Tema</span></button>
+  <button class="btn btn-sm" id="verse-select-toggle" type="button" aria-pressed="false"><i class="fas fa-list-check"></i><span>Seleccionar</span></button>
+  <a class="btn btn-sm" href="<?= url('/comparar.php?book=' . $book['slug'] . '&chapter=' . $chapNum) ?>" title="Comparar traduções"><i class="fas fa-table-columns"></i><span>Comparar</span></a>
+  <button class="btn btn-sm" id="reading-focus-toggle" type="button" title="Modo de leitura focada" aria-pressed="false"><i class="fas fa-glasses"></i><span>Foco</span></button>
+  <button class="btn btn-sm reading-exit" type="button" id="reading-focus-exit"><i class="fas fa-xmark"></i> Sair do modo leitura</button>
 </div>
 
 <article class="verses" id="verses">
@@ -145,7 +158,8 @@ if ($user = current_user()) {
         $isFav = isset($favIds[$vid]);
         $hasNote = isset($noteIds[$vid]);
     ?>
-      <p class="verse <?= $isFav ? 'fav' : '' ?>" id="v<?= (int) $v['verse_number'] ?>" data-verse-id="<?= $vid ?>">
+      <p class="verse <?= $isFav ? 'fav' : '' ?>" id="v<?= (int) $v['verse_number'] ?>" data-verse-id="<?= $vid ?>" data-verse-number="<?= (int) $v['verse_number'] ?>">
+        <span class="verse-select-indicator" aria-hidden="true"><i class="fas fa-check"></i></span>
         <span class="vnum"><?= (int) $v['verse_number'] ?></span>
         <?= e($v['text']) ?>
         <?php if ($hasNote): ?><i class="fas fa-pen-to-square note-indicator" title="Este versículo tem uma nota"></i><?php endif; ?>
@@ -159,6 +173,14 @@ if ($user = current_user()) {
     <?php endforeach; ?>
   <?php endif; ?>
 </article>
+
+<div class="verse-selection-bar" id="verse-selection-bar" aria-live="polite">
+  <strong><span id="verse-selection-count">0</span> seleccionado(s)</strong>
+  <span class="selection-spacer"></span>
+  <button class="btn btn-sm" type="button" id="selected-copy"><i class="fas fa-copy"></i> Copiar</button>
+  <button class="btn btn-sm" type="button" id="selected-share"><i class="fas fa-share-nodes"></i> Partilhar</button>
+  <button class="btn btn-sm btn-ghost" type="button" id="selected-cancel">Cancelar</button>
+</div>
 
 <nav class="chapter-nav">
   <?php if ($prevLink): ?>
@@ -199,12 +221,12 @@ function bwVerseRef(num, el) {
 }
 function bwCopyVerse(num, el) {
   const text = el.closest('.verse').cloneNode(true);
-  text.querySelectorAll('.vtools,.vnum').forEach(n => n.remove());
+  text.querySelectorAll('.vtools,.vnum,.verse-select-indicator,.note-indicator').forEach(n => n.remove());
   copyText(bwVerseRef(num, el) + ' — ' + text.textContent.trim());
 }
 function bwShareVerse(num, el) {
   const text = el.closest('.verse').cloneNode(true);
-  text.querySelectorAll('.vtools,.vnum').forEach(n => n.remove());
+  text.querySelectorAll('.vtools,.vnum,.verse-select-indicator,.note-indicator').forEach(n => n.remove());
   // Link amigável para o versículo: /biblia/ARC/joao/3?verse=16#v16
   const url = new URL(BASE_URL + '/<?= rawurlencode($abbr) ?>/<?= rawurlencode($book['slug'] ?? '') ?>/<?= (int) $chapNum ?>', location.href);
   url.searchParams.set('verse', String(num));
@@ -213,6 +235,79 @@ function bwShareVerse(num, el) {
             bwVerseRef(num, el) + ' — ' + text.textContent.trim(),
             url.toString());
 }
+
+// ---- Selecção de vários versículos ----
+const selectionToggle = document.getElementById('verse-select-toggle');
+const selectionBar = document.getElementById('verse-selection-bar');
+const selectionCount = document.getElementById('verse-selection-count');
+const verseElements = [...document.querySelectorAll('.verse')];
+let selectionMode = false;
+
+function selectedVerses() { return verseElements.filter((verse) => verse.classList.contains('selected')); }
+function selectionText() {
+  return selectedVerses().map((verse) => {
+    const copy = verse.cloneNode(true);
+    copy.querySelectorAll('.vtools,.vnum,.verse-select-indicator,.note-indicator').forEach((node) => node.remove());
+    return <?= json_encode(($book['name'] ?? '') . ' ' . $chapNum . ':') ?> + verse.dataset.verseNumber + ' — ' + copy.textContent.trim();
+  }).join('\n');
+}
+function updateSelection() {
+  const count = selectedVerses().length;
+  selectionCount.textContent = String(count);
+  selectionBar.classList.toggle('open', selectionMode);
+  selectionBar.classList.toggle('has-selection', count > 0);
+}
+function setSelectionMode(enabled) {
+  selectionMode = enabled;
+  document.body.classList.toggle('verse-selection-mode', enabled);
+  selectionToggle?.classList.toggle('active', enabled);
+  selectionToggle?.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+  verseElements.forEach((verse) => verse.tabIndex = enabled ? 0 : -1);
+  if (!enabled) verseElements.forEach((verse) => {
+    verse.classList.remove('selected');
+    verse.setAttribute('aria-selected', 'false');
+  });
+  updateSelection();
+}
+function toggleVerseSelection(verse) {
+  if (!selectionMode) return;
+  verse.classList.toggle('selected');
+  verse.setAttribute('aria-selected', verse.classList.contains('selected') ? 'true' : 'false');
+  updateSelection();
+}
+selectionToggle?.addEventListener('click', () => setSelectionMode(!selectionMode));
+verseElements.forEach((verse) => {
+  verse.addEventListener('click', (event) => {
+    if (selectionMode && !event.target.closest('button')) toggleVerseSelection(verse);
+  });
+  verse.addEventListener('keydown', (event) => {
+    if (selectionMode && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault(); toggleVerseSelection(verse);
+    }
+  });
+});
+document.getElementById('selected-copy')?.addEventListener('click', () => {
+  const text = selectionText();
+  if (!text) return toast('Seleccione pelo menos um versículo.', 'error');
+  copyText(text);
+});
+document.getElementById('selected-share')?.addEventListener('click', () => {
+  const selected = selectedVerses();
+  if (!selected.length) return toast('Seleccione pelo menos um versículo.', 'error');
+  const nums = selected.map((verse) => verse.dataset.verseNumber);
+  const url = new URL(location.href); url.hash = 'v' + nums[0];
+  shareText(<?= json_encode(($book['name'] ?? '') . ' ' . $chapNum . ' — ' . $abbr) ?>, selectionText(), url.toString());
+});
+document.getElementById('selected-cancel')?.addEventListener('click', () => setSelectionMode(false));
+
+// ---- Modo de leitura focada ----
+const focusToggle = document.getElementById('reading-focus-toggle');
+function setReadingFocus(enabled) {
+  document.body.classList.toggle('reading-mode', enabled);
+  focusToggle?.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+}
+focusToggle?.addEventListener('click', () => setReadingFocus(!document.body.classList.contains('reading-mode')));
+document.getElementById('reading-focus-exit')?.addEventListener('click', () => setReadingFocus(false));
 function bwToggleFav(btn, verseId) {
   VerseActions.toggleFavorite(verseId, btn).then(() => {
     btn.closest('.verse').classList.toggle('fav', VerseActions.isFav(verseId));
@@ -272,7 +367,7 @@ window.onPickChapter = (slug, name, ch) => {
 <?php if ($anchor > 0): ?>
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('v<?= $anchor ?>');
-  if (el) { el.scrollIntoView({ block: 'center' }); el.style.background = 'var(--accent-soft)'; }
+  if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('verse-target'); }
 });
 <?php endif; ?>
 

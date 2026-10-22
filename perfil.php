@@ -69,14 +69,14 @@ function apply_db_prefs(): void
 ?>
 <?= apply_db_prefs(); ?>
 
-<div class="reader-header">
-  <div class="crumb">Conta</div>
-  <h1><i class="fas fa-user" style="color:var(--accent)"></i> O meu perfil</h1>
-</div>
+<header class="page-header">
+  <span class="page-kicker">Conta</span>
+  <div class="page-title-row"><span class="page-icon"><i class="fas fa-user"></i></span><div><h1>O meu perfil</h1><p>Dados pessoais, leitura e segurança da conta.</p></div></div>
+</header>
 
 <div class="grid grid-2">
-  <section class="card">
-    <h3>Dados pessoais</h3>
+  <section class="card settings-card">
+    <div class="settings-card-head"><span><i class="fas fa-user-pen"></i></span><div><h3>Dados pessoais</h3><p>Informações principais da sua conta.</p></div></div>
     <form method="post">
       <?= csrf_field() ?>
       <label class="field"><span>Nome</span>
@@ -92,8 +92,8 @@ function apply_db_prefs(): void
     </form>
   </section>
 
-  <section class="card">
-    <h3>Preferências de leitura</h3>
+  <section class="card settings-card">
+    <div class="settings-card-head"><span><i class="fas fa-book-open-reader"></i></span><div><h3>Preferências de leitura</h3><p>Ajuste a leitura ao seu conforto.</p></div></div>
     <?php if ($saved): ?><div class="alert alert-success">Preferências guardadas.</div><?php endif; ?>
     <form method="post">
       <?= csrf_field() ?>
@@ -113,8 +113,8 @@ function apply_db_prefs(): void
     </form>
   </section>
 
-  <section class="card">
-    <h3>Alterar palavra-passe</h3>
+  <section class="card settings-card">
+    <div class="settings-card-head"><span><i class="fas fa-lock"></i></span><div><h3>Alterar palavra-passe</h3><p>Proteja o acesso à sua conta.</p></div></div>
     <?php if (!empty($pwOk)): ?><div class="alert alert-success"><?= e($pwOk) ?></div><?php endif; ?>
     <?php if (!empty($pwError)): ?><div class="alert alert-error"><?= e($pwError) ?></div><?php endif; ?>
     <form method="post">
@@ -129,15 +129,15 @@ function apply_db_prefs(): void
     </form>
   </section>
 
-  <section class="card">
-    <h3>Actividade</h3>
+  <section class="card settings-card">
+    <div class="settings-card-head"><span><i class="fas fa-chart-simple"></i></span><div><h3>Actividade</h3><p>Resumo do conteúdo que guardou.</p></div></div>
     <div class="stats-grid">
       <div class="stat-card"><div class="icon"><i class="fas fa-star"></i></div>
         <div><div class="value"><?= fmt_num($favCount) ?></div><div class="label">Favoritos</div></div></div>
       <div class="stat-card"><div class="icon"><i class="fas fa-pen-to-square"></i></div>
         <div><div class="value"><?= fmt_num($noteCount) ?></div><div class="label">Notas</div></div></div>
     </div>
-    <p style="margin-top:1rem">
+    <p class="settings-logout">
       <a class="btn btn-danger" href="<?= url('/logout.php') ?>"><i class="fas fa-right-from-bracket"></i> Terminar sessão</a>
     </p>
   </section>

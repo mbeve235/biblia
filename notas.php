@@ -8,7 +8,7 @@ $user = require_login();
 require_once __DIR__ . '/includes/header.php';
 
 $notes = db_all(
-    'SELECT n.id, n.verse_id, n.note, n.updated_at,
+    'SELECT n.id, n.verse_id, n.note, n.updated_at, v.text AS verse_text,
             v.verse_number, c.chapter_number, b.name AS book_name, b.slug, t.abbreviation AS translation
      FROM notes n
      JOIN verses v ON v.id = n.verse_id
@@ -21,11 +21,10 @@ $notes = db_all(
 );
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Pessoal</div>
-  <h1><i class="fas fa-pen-to-square" style="color:var(--accent)"></i> Notas</h1>
-  <p style="color:var(--text-soft)"><?= count($notes) ?> nota(s) pessoal(is).</p>
-</div>
+<header class="page-header">
+  <span class="page-kicker">Pessoal</span>
+  <div class="page-title-row"><span class="page-icon"><i class="fas fa-pen-to-square"></i></span><div><h1>Notas</h1><p><?= count($notes) ?> nota(s) pessoal(is).</p></div></div>
+</header>
 
 <?php if (!$notes): ?>
   <div class="empty-state">
@@ -37,20 +36,20 @@ $notes = db_all(
   <?php foreach ($notes as $n): ?>
     <section class="card note-card">
       <div class="card-head">
-        <h3 style="color:var(--accent)">
-          <span class="bk-badge" style="vertical-align:-5px"><?= brand_svg('', 12) ?></span>
+        <h3 class="entity-title">
+          <span class="bk-badge"><?= brand_svg('', 12) ?></span>
           <a href="<?= url('/leitura.php?translation=' . urlencode($n['translation']) . '&book=' . $n['slug'] . '&chapter=' . (int) $n['chapter_number'] . '&verse=' . (int) $n['verse_number']) ?>">
             <?= e($n['book_name']) ?> <?= (int) $n['chapter_number'] ?>:<?= (int) $n['verse_number'] ?>
           </a>
           <span class="badge badge-accent"><?= e($n['translation']) ?></span>
         </h3>
-        <small style="color:var(--text-faint)"><?= fmt_datetime($n['updated_at']) ?></small>
+        <small class="muted"><?= fmt_datetime($n['updated_at']) ?></small>
       </div>
-      <p style="font-family:var(--read-font);font-size:.95rem;color:var(--text-soft);margin-bottom:.7rem">
-        “<?= e(excerpt(db_one('SELECT text FROM verses WHERE id = ?', [$n['verse_id']])['text'] ?? '', 110)) ?>”
+      <p class="scripture-excerpt">
+        “<?= e(excerpt($n['verse_text'] ?? '', 110)) ?>”
       </p>
-      <textarea class="note-edit" data-id="<?= (int) $n['id'] ?>" rows="3" style="margin-bottom:.6rem"><?= e($n['note']) ?></textarea>
-      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+      <textarea class="note-edit card-textarea" data-id="<?= (int) $n['id'] ?>" rows="3"><?= e($n['note']) ?></textarea>
+      <div class="card-actions">
         <button class="btn btn-sm btn-danger" onclick="bwDeleteNote(<?= (int) $n['id'] ?>, this)"><i class="fas fa-trash"></i> Eliminar</button>
         <button class="btn btn-sm btn-primary" onclick="bwSaveNote(<?= (int) $n['id'] ?>, this)"><i class="fas fa-floppy-disk"></i> Guardar</button>
       </div>

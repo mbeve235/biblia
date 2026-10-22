@@ -163,11 +163,10 @@ $transList = db_all('SELECT abbreviation, name FROM translations WHERE status = 
 $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTrans['id'] ?? 0)) : [];
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Pessoal</div>
-  <h1><i class="fas fa-dove" style="color:var(--accent)"></i> Ministrações</h1>
-  <p style="color:var(--text-soft)">As suas interpretações e estudos da Palavra — privados, só para si.</p>
-</div>
+<header class="page-header">
+  <span class="page-kicker">Pessoal</span>
+  <div class="page-title-row"><span class="page-icon"><i class="fas fa-dove"></i></span><div><h1>Ministrações</h1><p>As suas interpretações e estudos da Palavra — privados, só para si.</p></div></div>
+</header>
 
 <?php if ($ok): ?><div class="alert alert-success"><?= e($ok) ?></div><?php endif; ?>
 <?php if ($error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endif; ?>
@@ -185,7 +184,7 @@ $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTran
     </label>
 
     <div class="field">
-      <span>Textos bíblicos <button type="button" class="btn btn-sm" id="btn-add-verse" style="margin-left:.4rem"><i class="fas fa-book-open"></i> Escolher versículos</button></span>
+      <span>Textos bíblicos <button type="button" class="btn btn-sm field-inline-action" id="btn-add-verse"><i class="fas fa-book-open"></i> Escolher versículos</button></span>
       <div id="min-refs" class="min-refs"><?= $editRefs ? '' : '<span class="min-refs-empty">Nenhuma referência — clique em “Escolher versículos”.</span>' ?></div>
     </div>
 
@@ -193,7 +192,7 @@ $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTran
       <textarea name="body" id="min-body" rows="7" required placeholder="Escreva a sua interpretação, estudo ou pregação…"><?= e($editItem['body'] ?? '') ?></textarea>
     </label>
 
-    <div style="display:flex;gap:.5rem;justify-content:flex-end">
+    <div class="card-actions">
       <?php if ($editItem): ?><a class="btn btn-ghost" href="<?= url('/ministracoes.php') ?>">Cancelar</a><?php endif; ?>
       <button class="btn btn-primary" type="submit"><i class="fas fa-floppy-disk"></i> <?= $editItem ? 'Actualizar' : 'Guardar' ?></button>
     </div>
@@ -206,7 +205,7 @@ $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTran
     <p>Ainda não tem ministrações. Escreva a sua primeira interpretação acima.</p>
   </div>
 <?php else: ?>
-  <p style="color:var(--text-faint);font-size:.85rem;margin:.4rem 0"><?= count($items) ?> ministração(ões)</p>
+  <p class="section-meta"><?= count($items) ?> ministração(ões)</p>
   <?php foreach ($items as $m): ?>
     <?php
       $itemRefs = $m['refs_json']
@@ -215,15 +214,15 @@ $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTran
     ?>
     <article class="card min-card">
       <div class="card-head">
-        <h3 style="color:var(--accent)">
-          <span class="bk-badge" style="vertical-align:-5px"><?= brand_svg('', 12) ?></span>
+        <h3 class="entity-title">
+          <span class="bk-badge"><?= brand_svg('', 12) ?></span>
           <?= e($m['title']) ?>
         </h3>
-        <small style="color:var(--text-faint)"><?= fmt_datetime($m['updated_at']) ?></small>
+        <small class="muted"><?= fmt_datetime($m['updated_at']) ?></small>
       </div>
 
       <?php if ($itemRefs): ?>
-        <div class="min-refs" style="margin:.2rem 0 .8rem">
+        <div class="min-refs min-refs-spaced">
           <?php foreach ($itemRefs as $r): ?>
             <a class="min-chip" href="<?= e(min_ref_url($r)) ?>" title="<?= e($r['text'] ?? 'Ver o capítulo') ?>">
               <span class="bk-badge"><?= brand_svg('', 11) ?></span>
@@ -260,24 +259,24 @@ $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTran
 
       <div class="min-body"><?= nl2br(e($m['body'])) ?></div>
 
-      <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.8rem;flex-wrap:wrap">
+      <div class="card-actions card-actions-spaced">
         <?php if ($m['share_token']): ?>
           <button class="btn btn-sm" type="button" onclick='bwShareMin(<?= json_encode(["t" => $m["title"], "b" => excerpt($m["body"], 140), "u" => url('/publicar.php?t=' . $m['share_token'])], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'><i class="fas fa-share-nodes"></i> Partilhar</button>
         <?php else: ?>
-          <form method="post" style="display:inline">
+          <form method="post" class="inline-form">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="share">
             <input type="hidden" name="id" value="<?= (int) $m['id'] ?>">
             <button class="btn btn-sm" type="submit"><i class="fas fa-share-nodes"></i> Publicar por link</button>
           </form>
         <?php endif; ?>
-        <form method="post" style="display:inline">
+        <form method="post" class="inline-form">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="edit">
           <input type="hidden" name="id" value="<?= (int) $m['id'] ?>">
           <button class="btn btn-sm" type="submit"><i class="fas fa-pen"></i> Editar</button>
         </form>
-        <form method="post" style="display:inline" onsubmit="return confirm('Eliminar esta ministração?')">
+        <form method="post" class="inline-form" onsubmit="return confirm('Eliminar esta ministração?')">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="delete">
           <input type="hidden" name="id" value="<?= (int) $m['id'] ?>">
@@ -288,7 +287,7 @@ $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTran
         <div class="min-share">
           <input type="text" readonly value="<?= e(url('/publicar.php?t=' . $m['share_token'])) ?>" onclick="this.select()" aria-label="Link público">
           <button class="btn btn-sm" type="button" onclick="copyText(this.parentElement.querySelector('input').value)"><i class="fas fa-copy"></i> Copiar</button>
-          <form method="post" style="display:inline">
+          <form method="post" class="inline-form">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="unshare">
             <input type="hidden" name="id" value="<?= (int) $m['id'] ?>">
@@ -339,7 +338,7 @@ ob_start();
 
     <footer class="vp-foot">
       <span class="vp-count" id="vp-count">Nada escolhido</span>
-      <div style="display:flex;gap:.5rem">
+      <div class="modal-actions">
         <button class="btn btn-ghost" type="button" id="vp-cancel">Cancelar</button>
         <button class="btn btn-primary" type="button" id="vp-add" disabled><i class="fas fa-plus"></i> Adicionar</button>
       </div>

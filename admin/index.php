@@ -33,11 +33,7 @@ $topSearches = db_all(
 );
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1>Dashboard</h1>
-  <p style="color:var(--text-soft)">Visão geral do sistema.</p>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Administração</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-gauge-high"></i></span><div><h1>Dashboard</h1><p>Visão geral do sistema.</p></div></div></header>
 
 <div class="grid grid-4">
   <div class="stat-card"><div class="icon"><i class="fas fa-language"></i></div>

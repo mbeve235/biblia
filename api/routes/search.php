@@ -75,8 +75,8 @@ if (in_array($testament, ['AT', 'NT'], true)) { $where[] = 'b.testament = ?'; $p
 $isPhrase = preg_match('/^".+"$/', $q) === 1;
 $clean    = $isPhrase ? trim($q, '"') : $q;
 
-$transFilter = $transAbbr !== '' ? 'AND t.abbreviation = ' . db()->quote($transAbbr) : '';
 $results = [];
+$filterSql = implode(' AND ', $where);
 
 // FULLTEXT em modo booleano
 $ftQuery = $isPhrase ? '"' . str_replace('"', '', $clean) . '"' : '+' . implode(' +', preg_split('/\s+/u', $clean) ?: []);
@@ -89,11 +89,11 @@ $sql = 'SELECT v.verse_number, v.text, c.chapter_number, b.name AS book_name, b.
         JOIN chapters c ON c.id = v.chapter_id
         JOIN books b ON b.id = v.book_id
         JOIN translations t ON t.id = v.translation_id
-        WHERE MATCH(v.search_text) AGAINST (? IN BOOLEAN MODE) ' . $transFilter . '
+        WHERE MATCH(v.search_text) AGAINST (? IN BOOLEAN MODE) AND ' . $filterSql . '
         ORDER BY score DESC
         LIMIT ' . $limit;
 try {
-    $results = db_all($sql, [$ftQuery, $ftQuery]);
+    $results = db_all($sql, array_merge([$ftQuery, $ftQuery], $params));
 } catch (PDOException $e) {
     $results = [];
 }
@@ -107,10 +107,10 @@ if (count($results) < 5) {
              JOIN chapters c ON c.id = v.chapter_id
              JOIN books b ON b.id = v.book_id
              JOIN translations t ON t.id = v.translation_id
-             WHERE LOWER(v.text) LIKE ? ' . $transFilter . '
+             WHERE LOWER(v.text) LIKE ? AND ' . $filterSql . '
              ORDER BY b.book_order, c.chapter_number, v.verse_number
              LIMIT ' . $limit;
-    $likeResults = db_all($sql2, [$like]);
+    $likeResults = db_all($sql2, array_merge([$like], $params));
     // Merge sem duplicar
     $seen = [];
     foreach ($results as $r) { $seen[$r['translation'] . $r['book_name'] . $r['chapter_number'] . $r['verse_number']] = true; }

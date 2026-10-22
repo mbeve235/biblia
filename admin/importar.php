@@ -10,11 +10,7 @@ $translations = db_all('SELECT id, name, abbreviation FROM translations ORDER BY
 $preselect = (int) ($_GET['translation_id'] ?? 0);
 ?>
 
-<div class="reader-header">
-  <div class="crumb">Administração</div>
-  <h1><i class="fas fa-file-import" style="color:var(--accent)"></i> Importar tradução</h1>
-  <p style="color:var(--text-soft)">O sistema detecta o formato automaticamente, valida e importa em blocos com barra de progresso.</p>
-</div>
+<header class="page-header admin-page-header"><span class="page-kicker">Conteúdo</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-file-import"></i></span><div><h1>Importar tradução</h1><p>Detecção automática, validação e importação segura em blocos.</p></div></div></header>
 
 <div class="wizard-steps">
   <div class="step active" id="step-1">1 · Ficheiro</div>
