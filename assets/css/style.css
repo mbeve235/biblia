@@ -1647,3 +1647,16 @@ body.reading-mode .reading-exit {
 .reading-preview { margin-bottom:1rem; padding:1rem 1.1rem; border:1px solid var(--border); border-radius:13px; background:var(--bg); font-family:var(--read-font); transition:font-size .1s,line-height .1s; }
 .reading-preview small { display:block; margin-bottom:.45rem; color:var(--text-faint); font-family:system-ui,sans-serif; font-size:.65rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
 .reading-preview p { margin:0; }.reading-preview sup { margin-right:.3rem; color:var(--accent); font-family:system-ui,sans-serif; font-weight:800; }
+
+.habit-overview { display:grid; grid-template-columns:auto 1fr; gap:1rem; margin-bottom:1.5rem; padding:1rem; border:1px solid var(--border); border-radius:18px; background:linear-gradient(135deg,var(--surface),color-mix(in srgb,var(--accent-soft) 42%,var(--surface))); }
+.habit-streak { display:flex; align-items:center; gap:.75rem; padding-right:1rem; border-right:1px solid var(--border); }
+.habit-streak>span { width:48px; height:48px; display:grid; place-items:center; border-radius:50%; background:var(--warning-soft); color:var(--warning); font-size:1.15rem; }
+.habit-streak strong,.habit-streak small { display:block; }.habit-streak strong { font-size:1.45rem; line-height:1; }.habit-streak small { margin-top:.25rem; color:var(--text-faint); white-space:nowrap; }
+.habit-week { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.habit-week>div>strong,.habit-week>div>small { display:block; }.habit-week>div>small { color:var(--text-faint); font-size:.73rem; }
+.habit-days { display:flex; gap:.45rem; }
+.habit-days span { display:grid; justify-items:center; gap:.25rem; color:var(--text-faint); }
+.habit-days span>i { width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:var(--surface-2); font-size:.55rem; }
+.habit-days span.done { color:var(--accent); }.habit-days span.done>i { background:var(--accent); color:#fff; font-size:.7rem; }
+.habit-days small { font-size:.62rem; }
+@media(max-width:640px){.habit-overview{grid-template-columns:1fr}.habit-streak{border-right:0;border-bottom:1px solid var(--border);padding:0 0 .8rem}.habit-week{align-items:flex-start;flex-direction:column}.habit-days{width:100%;justify-content:space-between}}

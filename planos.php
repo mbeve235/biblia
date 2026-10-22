@@ -72,6 +72,21 @@ $activeTranslation = db_one('SELECT abbreviation FROM translations WHERE abbrevi
 if (!$activeTranslation) $activeTranslation = db_one('SELECT abbreviation FROM translations WHERE status = "active" ORDER BY id LIMIT 1');
 $activeAbbr = $activeTranslation['abbreviation'] ?? '';
 
+$habitRows = db_all(
+    'SELECT DATE(read_at) AS reading_date FROM reading_history
+     WHERE user_id = ? AND read_at >= DATE_SUB(CURDATE(), INTERVAL 365 DAY)
+     GROUP BY DATE(read_at) ORDER BY reading_date DESC',
+    [$user['id']]
+);
+$readingStreak = reading_streak_days($habitRows);
+$readDateSet = [];
+foreach ($habitRows as $habitRow) $readDateSet[$habitRow['reading_date']] = true;
+$weekDays = [];
+for ($offset = 6; $offset >= 0; $offset--) {
+    $date = date('Y-m-d', strtotime('-' . $offset . ' days'));
+    $weekDays[] = ['date' => $date, 'label' => mb_substr(['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][(int)date('w', strtotime($date))], 0, 3), 'done' => isset($readDateSet[$date])];
+}
+
 $pageTitle = $selectedPlan ? $selectedPlan['title'] : 'Planos de leitura';
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -84,6 +99,10 @@ require_once __DIR__ . '/includes/header.php';
 <?php if ($message): ?><div class="alert alert-success" role="status"><?= e($message) ?></div><?php endif; ?>
 
 <?php if (!$selectedPlan): ?>
+  <section class="habit-overview" aria-label="Ritmo de leitura">
+    <div class="habit-streak"><span><i class="fas fa-fire"></i></span><div><strong><?= $readingStreak ?></strong><small><?= $readingStreak === 1 ? 'dia seguido' : 'dias seguidos' ?></small></div></div>
+    <div class="habit-week"><div><strong>O seu ritmo nesta semana</strong><small>Cada leitura conta — constância antes de quantidade.</small></div><div class="habit-days"><?php foreach ($weekDays as $weekDay): ?><span class="<?= $weekDay['done'] ? 'done' : '' ?>" title="<?= e($weekDay['date']) ?>"><i class="fas fa-<?= $weekDay['done'] ? 'check' : 'circle' ?>"></i><small><?= e($weekDay['label']) ?></small></span><?php endforeach; ?></div></div>
+  </section>
   <?php $activePlans = array_filter($plans, fn($plan) => !empty($plan['user_plan_id']) && $plan['status'] !== 'completed'); ?>
   <?php if ($activePlans): ?>
   <section class="reading-plan-section">
