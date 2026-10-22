@@ -177,6 +177,23 @@ if ($user = current_user()) {
   <?php endif; ?>
 </article>
 
+<nav class="reader-dock" aria-label="Navegação permanente da leitura">
+  <?php if ($prevLink): ?>
+    <a class="reader-dock-arrow" href="<?= url('/leitura.php?translation=' . urlencode($abbr) . '&book=' . $prevLink['slug'] . '&chapter=' . $prevLink['ch']) ?>" title="<?= e($prevLink['name']) ?> <?= $prevLink['ch'] ?>" aria-label="Capítulo anterior: <?= e($prevLink['name']) ?> <?= $prevLink['ch'] ?>">
+      <i class="fas fa-chevron-left"></i>
+    </a>
+  <?php else: ?><span class="reader-dock-arrow disabled" aria-hidden="true"><i class="fas fa-chevron-left"></i></span><?php endif; ?>
+  <button class="reader-dock-current" type="button" data-open-books aria-haspopup="dialog" aria-label="Trocar livro ou capítulo; actualmente em <?= e($book['name']) ?> <?= $chapNum ?>">
+    <span><?= e($book['name']) ?> <?= $chapNum ?></span>
+    <small><?= e($abbr) ?> · tocar para mudar</small>
+  </button>
+  <?php if ($nextLink): ?>
+    <a class="reader-dock-arrow" href="<?= url('/leitura.php?translation=' . urlencode($abbr) . '&book=' . $nextLink['slug'] . '&chapter=' . $nextLink['ch']) ?>" title="<?= e($nextLink['name']) ?> <?= $nextLink['ch'] ?>" aria-label="Próximo capítulo: <?= e($nextLink['name']) ?> <?= $nextLink['ch'] ?>">
+      <i class="fas fa-chevron-right"></i>
+    </a>
+  <?php else: ?><span class="reader-dock-arrow disabled" aria-hidden="true"><i class="fas fa-chevron-right"></i></span><?php endif; ?>
+</nav>
+
 <div class="verse-selection-bar" id="verse-selection-bar" aria-live="polite">
   <strong><span id="verse-selection-count">0</span> seleccionado(s)</strong>
   <span class="selection-spacer"></span>
@@ -191,9 +208,6 @@ if ($user = current_user()) {
       <i class="fas fa-arrow-left"></i> <?= e($prevLink['name']) ?> <?= $prevLink['ch'] ?>
     </a>
   <?php else: ?><span></span><?php endif; ?>
-  <a href="#" class="btn chapter-book-switch" data-open-books aria-haspopup="dialog" aria-label="Escolher outro livro ou capítulo">
-    <i class="fas fa-book-open"></i> <span>Livros</span>
-  </a>
   <?php if ($nextLink): ?>
     <a class="btn" href="<?= url('/leitura.php?translation=' . urlencode($abbr) . '&book=' . $nextLink['slug'] . '&chapter=' . $nextLink['ch']) ?>">
       <?= e($nextLink['name']) ?> <?= $nextLink['ch'] ?> <i class="fas fa-arrow-right"></i>

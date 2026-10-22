@@ -508,13 +508,19 @@ table.table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .verse-selection-bar:not(.has-selection) #selected-copy,
 .verse-selection-bar:not(.has-selection) #selected-share { opacity: .45; }
 
+.reader-dock { position: fixed; z-index: 45; left: calc(50% + 120px); bottom: 1rem; display: grid; grid-template-columns: 42px minmax(150px, 230px) 42px; align-items: stretch; overflow: hidden; border: 1px solid color-mix(in srgb, var(--border) 75%, var(--accent)); border-radius: 16px; background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: 0 10px 35px rgba(20, 24, 46, .2); backdrop-filter: blur(14px); transform: translateX(-50%); transition: opacity .15s, transform .15s, bottom .2s; }
+.reader-dock-arrow { display: grid; place-items: center; min-height: 48px; color: var(--text-soft); }
+.reader-dock-arrow:hover { background: var(--accent-soft); color: var(--accent); text-decoration: none; }
+.reader-dock-arrow.disabled { opacity: .3; }
+.reader-dock-current { display: grid; place-items: center; align-content: center; min-width: 0; padding: .4rem .8rem; border: 0; border-inline: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; font: inherit; }
+.reader-dock-current:hover { background: var(--accent-soft); }
+.reader-dock-current span { max-width: 100%; overflow: hidden; font-size: .86rem; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.reader-dock-current small { color: var(--text-faint); font-size: .62rem; }
+body.verse-selection-mode .reader-dock { opacity: 0; pointer-events: none; transform: translate(-50%, 12px); }
+
 .chapter-nav {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: .75rem; margin-top: 2rem;
+  display: flex; justify-content: space-between; gap: 1rem; margin: 2rem 0 4.5rem;
 }
-.chapter-nav > a:first-child { justify-self: start; }
-.chapter-nav > a:last-child { justify-self: end; }
-.chapter-book-switch { justify-self: center; border-color: var(--accent); color: var(--accent); }
-.chapter-book-switch:hover { background: var(--accent-soft); text-decoration: none; }
 
 /* Modal selector de livros */
 .modal-overlay {
@@ -1220,6 +1226,7 @@ input:disabled, select:disabled, textarea:disabled {
 .bottom-nav { display: none; }
 
 @media (max-width: 1024px) {
+  .reader-dock { left: 50%; }
   .reader-scroll-progress { left: 0; }
   /* Sidebar fica ACIMA do topbar (60) para o menu ser clicável; backdrop logo abaixo.
      Antes: sidebar 50 < backdrop 55 → o backdrop cobria o menu aberto e nenhum item era clicável. */
@@ -1355,9 +1362,7 @@ input:disabled, select:disabled, textarea:disabled {
 
   /* Navegação prev/next: botões podem quebrar em duas linhas */
   .chapter-nav .btn { white-space: normal; text-align: left; padding: .5rem .7rem; }
-  .chapter-nav { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: .4rem; }
-  .chapter-book-switch { width: 44px; height: 44px; justify-content: center; padding: 0 !important; border-radius: 50%; }
-  .chapter-book-switch span { display: none; }
+  .reader-dock { bottom: calc(4.7rem + env(safe-area-inset-bottom)); grid-template-columns: 44px minmax(150px, 1fr) 44px; width: min(340px, calc(100% - 1.2rem)); }
 
   /* Modal de livros/capítulos em folga quase total */
   .modal-overlay { padding: 3.4rem .55rem 1rem; align-items: stretch; }
@@ -1454,6 +1459,7 @@ body.reading-mode .reading-exit {
   body.reading-mode .menu-toggle { display: none !important; }
   body.reading-mode .main { padding-top: 1rem; padding-bottom: 1.5rem; }
   body.reading-mode .reader-controls { margin-bottom: .8rem; }
+  body.reading-mode .reader-dock { bottom: 1rem; }
   body.reading-mode .reading-exit {
     top: .6rem; right: .6rem;
     background: var(--surface); border: 1px solid var(--border);
@@ -1464,7 +1470,7 @@ body.reading-mode .reading-exit {
 
 /* Impressão */
 @media print {
-  .topbar, .sidebar, .bottom-nav, .reader-controls, .chapter-nav, .vtools, .reading-exit { display: none !important; }
+  .topbar, .sidebar, .bottom-nav, .reader-controls, .reader-dock, .chapter-nav, .vtools, .reading-exit { display: none !important; }
   .main { margin: 0; }
   body { background: #fff; color: #000; }
 }
