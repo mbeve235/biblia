@@ -127,17 +127,49 @@ async function copyText(text) {
   }
 }
 
-async function shareText(title, text, url = '') {
-  // Mensagem completa e consistente: título, texto e link sempre juntos
+function openSharePanel(title, text, url = '') {
+  document.getElementById('global-share-panel')?.remove();
   const full = (title ? title + '\n\n' : '') + text + (url ? '\n\n' + url : '');
-  if (navigator.share) {
-    try {
-      const payload = url ? { title, text, url } : { title, text };
-      await navigator.share(payload);
-    } catch (e) { /* cancelado */ }
-  } else {
-    copyText(full);
+  const overlay = document.createElement('div');
+  overlay.id = 'global-share-panel';
+  overlay.className = 'share-overlay open';
+  overlay.innerHTML = '<section class="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title">' +
+    '<div class="share-sheet-head"><div><small>Enviar para alguém</small><h3 id="share-sheet-title">Partilhar</h3></div><button type="button" data-share-close aria-label="Fechar"><i class="fas fa-xmark"></i></button></div>' +
+    '<div class="share-preview"><i class="fas fa-quote-left"></i><div><strong></strong><p></p></div></div>' +
+    '<div class="share-destinations">' +
+      '<button type="button" data-share="whatsapp"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>' +
+      '<button type="button" data-share="facebook"><i class="fab fa-facebook-f"></i><span>Facebook</span></button>' +
+      '<button type="button" data-share="email"><i class="fas fa-envelope"></i><span>E-mail</span></button>' +
+      (navigator.share ? '<button type="button" data-share="native"><i class="fas fa-arrow-up-from-bracket"></i><span>Mais</span></button>' : '') +
+    '</div><div class="share-copy-row"><input type="text" readonly aria-label="Link para partilhar"><button class="btn btn-primary" type="button" data-share="copy-link"><i class="fas fa-link"></i> Copiar link</button></div>' +
+    '<button class="btn btn-ghost btn-block" type="button" data-share="copy-text"><i class="fas fa-copy"></i> Copiar texto e referência</button>' +
+    '</section>';
+  overlay.querySelector('.share-preview strong').textContent = title || 'Partilha';
+  overlay.querySelector('.share-preview p').textContent = text;
+  const linkInput = overlay.querySelector('.share-copy-row input');
+  linkInput.value = url;
+  if (!url) overlay.querySelector('.share-copy-row').hidden = true;
+  const close = () => { document.body.classList.remove('share-lock'); overlay.remove(); };
+  overlay.querySelector('[data-share-close]').onclick = close;
+  overlay.onclick = (event) => { if (event.target === overlay) close(); };
+  overlay.querySelector('[data-share="whatsapp"]').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank', 'noopener,noreferrer');
+  overlay.querySelector('[data-share="facebook"]').onclick = () => window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url || location.href), '_blank', 'noopener,noreferrer');
+  overlay.querySelector('[data-share="email"]').onclick = () => { location.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full); };
+  overlay.querySelector('[data-share="native"]')?.addEventListener('click', async () => { try { await navigator.share(url ? { title, text, url } : { title, text }); close(); } catch (e) { /* cancelado */ } });
+  overlay.querySelector('[data-share="copy-link"]').onclick = () => { copyText(url); close(); };
+  overlay.querySelector('[data-share="copy-text"]').onclick = () => { copyText(full); close(); };
+  document.body.appendChild(overlay);
+  document.body.classList.add('share-lock');
+  overlay.querySelector('[data-share="whatsapp"]').focus();
+}
+
+async function shareText(title, text, url = '') {
+  // No telemóvel usa a folha nativa; no computador apresenta destinos claros.
+  if (navigator.share && window.matchMedia('(pointer: coarse)').matches) {
+    try { await navigator.share(url ? { title, text, url } : { title, text }); return; }
+    catch (error) { if (error?.name === 'AbortError') return; }
   }
+  openSharePanel(title, text, url);
 }
 
 /* ---------------------------------------------------------------------
@@ -519,6 +551,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      document.getElementById('global-share-panel')?.remove();
+      document.body.classList.remove('share-lock');
       BookPicker.close();
       closeSidebar();
       document.querySelectorAll('.modal-overlay.open').forEach((ov) => ov.classList.remove('open'));

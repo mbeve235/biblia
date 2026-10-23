@@ -261,7 +261,7 @@ $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTran
 
       <div class="card-actions card-actions-spaced">
         <?php if ($m['share_token']): ?>
-          <button class="btn btn-sm" type="button" onclick='bwShareMin(<?= json_encode(["t" => $m["title"], "b" => excerpt($m["body"], 140), "u" => url('/publicar.php?t=' . $m['share_token'])], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'><i class="fas fa-share-nodes"></i> Partilhar</button>
+          <button class="btn btn-sm" type="button" onclick='bwShareMin(<?= json_encode(["t" => $m["title"], "b" => excerpt($m["body"], 140), "u" => ministry_share_url($m['share_token'])], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'><i class="fas fa-share-nodes"></i> Partilhar</button>
         <?php else: ?>
           <form method="post" class="inline-form">
             <?= csrf_field() ?>
@@ -285,7 +285,7 @@ $editRefs = $editItem ? resolve_min_refs($editItem['refs_json'], (int) ($defTran
       </div>
       <?php if ($m['share_token']): ?>
         <div class="min-share">
-          <input type="text" readonly value="<?= e(url('/publicar.php?t=' . $m['share_token'])) ?>" onclick="this.select()" aria-label="Link público">
+          <input type="text" readonly value="<?= e(ministry_share_url($m['share_token'])) ?>" onclick="this.select()" aria-label="Link público">
           <button class="btn btn-sm" type="button" onclick="copyText(this.parentElement.querySelector('input').value)"><i class="fas fa-copy"></i> Copiar</button>
           <form method="post" class="inline-form">
             <?= csrf_field() ?>

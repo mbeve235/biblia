@@ -124,7 +124,7 @@ if ($q !== '') {
         <p><?= e($r['text']) ?></p>
         <div class="search-result-actions">
           <button class="btn btn-sm" type="button" data-ref="<?= e($r['reference'] . ' (' . $r['translation'] . ')') ?>" data-text="<?= e($r['text']) ?>" onclick="bwCopySearch(this)"><i class="fas fa-copy"></i> Copiar</button>
-          <button class="btn btn-sm" type="button" data-ref="<?= e($r['reference'] . ' (' . $r['translation'] . ')') ?>" data-text="<?= e($r['text']) ?>" data-url="<?= e(url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse'])) ?>" onclick="bwShareSearch(this)"><i class="fas fa-share-nodes"></i> Partilhar</button>
+          <button class="btn btn-sm" type="button" data-ref="<?= e($r['reference'] . ' (' . $r['translation'] . ')') ?>" data-text="<?= e($r['text']) ?>" data-url="<?= e(scripture_url($r['translation'], $r['slug'], (int)$r['chapter'], (int)$r['verse'])) ?>" onclick="bwShareSearch(this)"><i class="fas fa-share-nodes"></i> Partilhar</button>
         </div>
       </section>
     <?php endforeach; ?>
@@ -149,7 +149,7 @@ if ($q !== '') {
           <div class="text"><?= $r['highlight'] /* já escapado na API */ ?></div>
           <div class="search-result-actions">
             <button class="btn btn-sm" type="button" data-ref="<?= e($r['reference'] . ' (' . $r['translation'] . ')') ?>" data-text="<?= e($r['text']) ?>" onclick="bwCopySearch(this)" aria-label="Copiar <?= e($r['reference']) ?>"><i class="fas fa-copy"></i> Copiar</button>
-            <button class="btn btn-sm" type="button" data-ref="<?= e($r['reference'] . ' (' . $r['translation'] . ')') ?>" data-text="<?= e($r['text']) ?>" data-url="<?= e(url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse'])) ?>" onclick="bwShareSearch(this)" aria-label="Partilhar <?= e($r['reference']) ?>"><i class="fas fa-share-nodes"></i> Partilhar</button>
+            <button class="btn btn-sm" type="button" data-ref="<?= e($r['reference'] . ' (' . $r['translation'] . ')') ?>" data-text="<?= e($r['text']) ?>" data-url="<?= e(scripture_url($r['translation'], $r['slug'], (int)$r['chapter'], (int)$r['verse'])) ?>" onclick="bwShareSearch(this)" aria-label="Partilhar <?= e($r['reference']) ?>"><i class="fas fa-share-nodes"></i> Partilhar</button>
           </div>
           <a class="search-result-open" aria-label="Abrir <?= e($r['reference']) ?>" href="<?= url('/leitura.php?translation=' . urlencode($r['translation']) . '&book=' . $r['slug'] . '&chapter=' . $r['chapter'] . '&verse=' . $r['verse']) ?>"><i class="fas fa-arrow-right"></i></a>
         </article>

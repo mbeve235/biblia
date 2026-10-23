@@ -16,6 +16,9 @@ Options -Indexes
   # Pesquisa amigável: /pesquisa/amor (tem de vir ANTES da regra genérica de 2 segmentos)
   RewriteRule ^(?:[Pp]esquisa)/([^/]+)/?$ pesquisa.php?q=$1 [QSA,L]
 
+  # Ministração pública por link estável: /partilha/TOKEN
+  RewriteRule ^(?:[Pp]artilha)/([a-fA-F0-9]{32})/?$ publicar.php?t=$1 [QSA,L]
+
   # URL amigável: /biblia/ARC/joao/3 ou /biblia/ARC/joao → leitura/biblia.
   # Em contexto de directório (.htaccess dentro da pasta do projecto), o Apache
   # retira o prefixo /biblia/ do caminho antes de aplicar as regras — por isso

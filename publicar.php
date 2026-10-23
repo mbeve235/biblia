@@ -33,6 +33,7 @@ if ($m) {
 } else {
     $ogDesc = 'Este link de ministração não está disponível ou foi desactivado pelo autor.';
 }
+$ogUrl = $m ? ministry_share_url($token) : url('/publicar.php');
 $noindex = true; // link privado por convite: fora dos motores de busca
 
 require_once __DIR__ . '/includes/header.php';
@@ -97,6 +98,7 @@ require_once __DIR__ . '/includes/header.php';
         Partilhado através de <strong><?= e(APP_NAME) ?></strong>
       </span>
       <a class="btn btn-sm btn-primary" href="<?= url('/biblia.php') ?>"><i class="fas fa-book-open"></i> Começar a ler</a>
+      <button class="btn btn-sm" type="button" onclick="shareText(<?= e(json_encode($m['title'], JSON_HEX_APOS | JSON_HEX_QUOT)) ?>, <?= e(json_encode(excerpt($m['body'], 180), JSON_HEX_APOS | JSON_HEX_QUOT)) ?>, <?= e(json_encode(ministry_share_url($token), JSON_HEX_APOS | JSON_HEX_QUOT)) ?>)"><i class="fas fa-share-nodes"></i> Partilhar</button>
     </div>
   </article>
 <?php endif; ?>

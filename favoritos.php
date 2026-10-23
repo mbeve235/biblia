@@ -61,7 +61,7 @@ $favs = db_all(
       <p class="scripture-text"><?= e($f['text']) ?></p>
       <div class="card-actions">
         <button class="btn btn-sm" type="button" data-ref="<?= e($f['book_name'] . ' ' . $f['chapter_number'] . ':' . $f['verse_number'] . ' (' . $f['translation'] . ')') ?>" data-text="<?= e($f['text']) ?>" onclick="bwCopyFavorite(this)"><i class="fas fa-copy"></i> Copiar</button>
-        <button class="btn btn-sm" type="button" data-ref="<?= e($f['book_name'] . ' ' . $f['chapter_number'] . ':' . $f['verse_number'] . ' (' . $f['translation'] . ')') ?>" data-text="<?= e($f['text']) ?>" data-url="<?= e(url('/leitura.php?translation=' . urlencode($f['translation']) . '&book=' . $f['slug'] . '&chapter=' . $f['chapter_number'] . '&verse=' . $f['verse_number'])) ?>" onclick="bwShareFavorite(this)"><i class="fas fa-share-nodes"></i> Partilhar</button>
+        <button class="btn btn-sm" type="button" data-ref="<?= e($f['book_name'] . ' ' . $f['chapter_number'] . ':' . $f['verse_number'] . ' (' . $f['translation'] . ')') ?>" data-text="<?= e($f['text']) ?>" data-url="<?= e(scripture_url($f['translation'], $f['slug'], (int)$f['chapter_number'], (int)$f['verse_number'])) ?>" onclick="bwShareFavorite(this)"><i class="fas fa-share-nodes"></i> Partilhar</button>
       </div>
     </section>
   <?php endforeach; ?>

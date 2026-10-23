@@ -89,6 +89,21 @@ function verse_reference(string $bookName, int $chapter, int $verse): string
     return $bookName . ' ' . $chapter . ':' . $verse;
 }
 
+/** URL pública e estável de uma passagem, pronta para partilha. */
+function scripture_url(string $translation, string $bookSlug, int $chapter, ?int $verse = null): string
+{
+    $path = '/' . rawurlencode($translation) . '/' . rawurlencode($bookSlug) . '/' . max(1, $chapter);
+    $url = url($path);
+    if ($verse !== null && $verse > 0) $url .= '?verse=' . $verse . '#v' . $verse;
+    return $url;
+}
+
+/** URL amigável de uma ministração publicada. */
+function ministry_share_url(string $token): string
+{
+    return url('/partilha/' . rawurlencode($token));
+}
+
 /** Corta texto por palavras completas. */
 function excerpt(string $text, int $maxLen = 160): string
 {

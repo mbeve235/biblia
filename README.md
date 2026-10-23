@@ -213,6 +213,7 @@ Descarregue o ficheiro, guarde como `.json` e siga o fluxo normal: **Administra�
 | `/biblia/ARC/joao/3` | `/leitura.php?translation=ARC&book=joao&chapter=3` |
 | `/biblia/ARC/joao` | `/biblia.php?translation=ARC&book=joao` |
 | `/pesquisa/amor` | `/pesquisa.php?q=amor` |
+| `/partilha/TOKEN` | `/publicar.php?t=TOKEN` |
 | `/api/translations` | API REST |
 
 A API responde sempre `{ "success": bool, "data": …, "message": "…" }`. Endpoints: `/api/translations`, `/api/books`, `/api/books/{id}/chapters`, `/api/bible/{trad}/{livro}/{cap}`, `/api/search?q=`, `/api/favorites`, `/api/notes`, `/api/history`, `/api/import/validate|run`, `/api/export/translation/{id}`, `/api/export/database`.

@@ -32,8 +32,11 @@ if ($trans && $book && $chapterRow) {
 // Título + Open Graph (definidos ANTES do header para <title> e prévias correctas)
 $reference = $book ? $book['name'] . ' ' . $chapNum : 'Capítulo';
 $pageTitle = $reference;
-$ogTitle   = $reference . ($trans ? ' · ' . $trans['abbreviation'] : '');
-if (!empty($verses)) {
+$sharedVerse = $anchor > 0 ? array_values(array_filter($verses, fn($verse) => (int) $verse['verse_number'] === $anchor))[0] ?? null : null;
+$ogTitle = $reference . ($sharedVerse ? ':' . $anchor : '') . ($trans ? ' · ' . $trans['abbreviation'] : '');
+if ($sharedVerse) {
+    $ogDesc = excerpt($sharedVerse['text'], 160);
+} elseif (!empty($verses)) {
     $ogDesc = excerpt($verses[0]['text'], 160);
 } elseif ($trans && $book) {
     $ogDesc = 'Leia ' . $book['name'] . ' ' . $chapNum . ' na tradução ' . $trans['name'] . '.';
@@ -41,7 +44,7 @@ if (!empty($verses)) {
     $ogDesc = 'Leia, pesquise e compare traduções da Bíblia.';
 }
 $ogUrl = $book
-    ? url('/' . rawurlencode($abbr) . '/' . rawurlencode($book['slug']) . '/' . $chapNum)
+    ? scripture_url($abbr, $book['slug'], $chapNum, $sharedVerse ? $anchor : null)
     : url('/');
 
 // Leitura inexistente (livro/capítulo inválido): 404 real com via de fuga
@@ -285,9 +288,8 @@ function bwShareVerse(num, el) {
   const text = el.closest('.verse').cloneNode(true);
   text.querySelectorAll('.vtools,.vnum,.verse-select-indicator,.note-indicator').forEach(n => n.remove());
   // Link amigável para o versículo: /biblia/ARC/joao/3?verse=16#v16
-  const url = new URL(BASE_URL + '/<?= rawurlencode($abbr) ?>/<?= rawurlencode($book['slug'] ?? '') ?>/<?= (int) $chapNum ?>', location.href);
-  url.searchParams.set('verse', String(num));
-  url.hash = 'v' + num;
+  const url = new URL(<?= json_encode($book ? scripture_url($abbr, $book['slug'], $chapNum) : url('/')) ?>, location.href);
+  url.searchParams.set('verse', String(num)); url.hash = 'v' + num;
   shareText(<?= json_encode(($book['name'] ?? '') . ' ' . $chapNum . ' — ' . $abbr) ?>,
             bwVerseRef(num, el) + ' — ' + text.textContent.trim(),
             url.toString());
