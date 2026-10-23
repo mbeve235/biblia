@@ -510,7 +510,10 @@ class Importer
             $insert = $pdo->prepare(
                 'INSERT INTO verses (translation_id, book_id, chapter_id, verse_number, heading, text, search_text)
                  VALUES (?, ?, ?, ?, ?, ?, ?)
-                 ON DUPLICATE KEY UPDATE heading = VALUES(heading), text = VALUES(text), search_text = VALUES(search_text)'
+                 ON DUPLICATE KEY UPDATE
+                    heading = COALESCE(VALUES(heading), heading),
+                    text = VALUES(text),
+                    search_text = VALUES(search_text)'
             );
             $bookIds = [];
             foreach ($chunk as $item) {

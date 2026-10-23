@@ -22,13 +22,14 @@ $chapterRow = $book ? db_one('SELECT id FROM chapters WHERE book_id = ? AND chap
 $verses = [];
 
 if ($trans && $book && $chapterRow) {
-    try {
+    $hasHeading = (bool) db_one("SHOW COLUMNS FROM verses LIKE 'heading'");
+    if ($hasHeading) {
         $verses = db_all(
             'SELECT id, verse_number, heading, text FROM verses
              WHERE translation_id = ? AND chapter_id = ? ORDER BY verse_number',
             [$trans['id'], $chapterRow['id']]
         );
-    } catch (PDOException $error) {
+    } else {
         $verses = db_all(
             'SELECT id, verse_number, NULL AS heading, text FROM verses
              WHERE translation_id = ? AND chapter_id = ? ORDER BY verse_number',
