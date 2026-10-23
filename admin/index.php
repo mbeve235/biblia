@@ -33,7 +33,7 @@ $topSearches = db_all(
 );
 ?>
 
-<header class="page-header admin-page-header"><span class="page-kicker">Administração</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-gauge-high"></i></span><div><h1>Dashboard</h1><p>Visão geral do sistema.</p></div></div></header>
+<header class="page-header admin-page-header admin-dashboard-head"><div><span class="page-kicker">Administração</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-gauge-high"></i></span><div><h1>Olá, <?= e(explode(' ', trim($currentUser['name']))[0]) ?></h1><p>Acompanhe o conteúdo, a comunidade e a saúde da Bíblia Web.</p></div></div></div><div class="admin-quick-actions"><a class="btn" href="<?= url('/admin/versiculos.php') ?>"><i class="fas fa-pen"></i> Editar Bíblia</a><a class="btn btn-primary" href="<?= url('/admin/importar.php') ?>"><i class="fas fa-cloud-arrow-up"></i> Importar</a></div></header>
 
 <div class="grid grid-4">
   <div class="stat-card"><div class="icon"><i class="fas fa-language"></i></div>
