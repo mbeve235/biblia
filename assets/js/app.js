@@ -127,7 +127,83 @@ async function copyText(text) {
   }
 }
 
-function openSharePanel(title, text, url = '') {
+function wrapCanvasText(context, text, maxWidth) {
+  const paragraphs = String(text).split('\n');
+  const lines = [];
+  paragraphs.forEach((paragraph, paragraphIndex) => {
+    const words = paragraph.trim().split(/\s+/).filter(Boolean);
+    let line = '';
+    words.forEach((word) => {
+      const test = line ? line + ' ' + word : word;
+      if (line && context.measureText(test).width > maxWidth) {
+        lines.push(line); line = word;
+      } else line = test;
+    });
+    if (line) lines.push(line);
+    if (paragraphIndex < paragraphs.length - 1) lines.push('');
+  });
+  return lines;
+}
+
+async function createScriptureCard(title, text, url = '') {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080; canvas.height = 1350;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 1080, 1350);
+  gradient.addColorStop(0, '#f7f2e8'); gradient.addColorStop(1, '#e7eee8');
+  ctx.fillStyle = gradient; ctx.fillRect(0, 0, 1080, 1350);
+
+  ctx.fillStyle = '#486f63'; ctx.fillRect(0, 0, 1080, 22);
+  ctx.beginPath(); ctx.arc(540, 162, 62, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 10; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(540, 126); ctx.lineTo(540, 198); ctx.moveTo(515, 151); ctx.lineTo(565, 151); ctx.stroke();
+
+  ctx.textAlign = 'center'; ctx.fillStyle = '#36574e';
+  ctx.font = '700 34px system-ui, sans-serif'; ctx.fillText('BÍBLIA WEB', 540, 270);
+  ctx.fillStyle = '#b58b4b'; ctx.font = '700 66px Georgia, serif'; ctx.fillText('“', 540, 374);
+
+  let fontSize = 55;
+  let lines = [];
+  do {
+    ctx.font = `500 ${fontSize}px Georgia, serif`;
+    lines = wrapCanvasText(ctx, text, 820);
+    fontSize -= 2;
+  } while (lines.length > 10 && fontSize > 35);
+  const lineHeight = fontSize * 1.45;
+  const textHeight = lines.length * lineHeight;
+  let y = Math.max(455, 700 - textHeight / 2);
+  ctx.fillStyle = '#263d36';
+  lines.forEach((line) => { if (line) ctx.fillText(line, 540, y); y += lineHeight; });
+
+  ctx.fillStyle = '#486f63'; ctx.font = '700 38px system-ui, sans-serif';
+  ctx.fillText(title, 540, 1135);
+  ctx.strokeStyle = 'rgba(72,111,99,.25)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(150, 1190); ctx.lineTo(930, 1190); ctx.stroke();
+  ctx.fillStyle = '#6d7d76'; ctx.font = '500 25px system-ui, sans-serif';
+  ctx.fillText(url ? new URL(url, location.href).host : location.host, 540, 1252);
+  return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Falha ao criar a imagem.')), 'image/jpeg', .92));
+}
+
+async function shareScriptureImage(title, text, url, downloadOnly = false) {
+  try {
+    const blob = await createScriptureCard(title, text, url);
+    const safeName = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
+    const file = new File([blob], (safeName || 'versiculo') + '-biblia-web.jpg', { type: 'image/jpeg' });
+    if (!downloadOnly && navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+      await navigator.share({ title, text: title + '\n' + url, files: [file] });
+      return;
+    }
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a'); link.href = objectUrl; link.download = file.name;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+    toast(downloadOnly ? 'Imagem descarregada.' : 'Imagem criada. Agora pode enviá-la pelo WhatsApp.', 'success');
+  } catch (error) {
+    if (error?.name !== 'AbortError') toast('Não foi possível criar a imagem.', 'error');
+  }
+}
+
+function openSharePanel(title, text, url = '', imageText = '') {
   document.getElementById('global-share-panel')?.remove();
   const full = (title ? title + '\n\n' : '') + text + (url ? '\n\n' + url : '');
   const overlay = document.createElement('div');
@@ -140,6 +216,7 @@ function openSharePanel(title, text, url = '') {
       '<button type="button" data-share="whatsapp"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>' +
       '<button type="button" data-share="facebook"><i class="fab fa-facebook-f"></i><span>Facebook</span></button>' +
       '<button type="button" data-share="email"><i class="fas fa-envelope"></i><span>E-mail</span></button>' +
+      (imageText ? '<button type="button" data-share="share-image"><i class="fas fa-image"></i><span>Partilhar imagem</span></button><button type="button" data-share="download-image"><i class="fas fa-download"></i><span>Baixar imagem</span></button>' : '') +
       (navigator.share ? '<button type="button" data-share="native"><i class="fas fa-arrow-up-from-bracket"></i><span>Mais</span></button>' : '') +
     '</div><div class="share-copy-row"><input type="text" readonly aria-label="Link para partilhar"><button class="btn btn-primary" type="button" data-share="copy-link"><i class="fas fa-link"></i> Copiar link</button></div>' +
     '<button class="btn btn-ghost btn-block" type="button" data-share="copy-text"><i class="fas fa-copy"></i> Copiar texto e referência</button>' +
@@ -155,6 +232,8 @@ function openSharePanel(title, text, url = '') {
   overlay.querySelector('[data-share="whatsapp"]').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank', 'noopener,noreferrer');
   overlay.querySelector('[data-share="facebook"]').onclick = () => window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url || location.href), '_blank', 'noopener,noreferrer');
   overlay.querySelector('[data-share="email"]').onclick = () => { location.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full); };
+  overlay.querySelector('[data-share="share-image"]')?.addEventListener('click', () => shareScriptureImage(title, imageText, url));
+  overlay.querySelector('[data-share="download-image"]')?.addEventListener('click', () => shareScriptureImage(title, imageText, url, true));
   overlay.querySelector('[data-share="native"]')?.addEventListener('click', async () => { try { await navigator.share(url ? { title, text, url } : { title, text }); close(); } catch (e) { /* cancelado */ } });
   overlay.querySelector('[data-share="copy-link"]').onclick = () => { copyText(url); close(); };
   overlay.querySelector('[data-share="copy-text"]').onclick = () => { copyText(full); close(); };
@@ -163,13 +242,13 @@ function openSharePanel(title, text, url = '') {
   overlay.querySelector('[data-share="whatsapp"]').focus();
 }
 
-async function shareText(title, text, url = '') {
+async function shareText(title, text, url = '', imageText = '') {
   // No telemóvel usa a folha nativa; no computador apresenta destinos claros.
-  if (navigator.share && window.matchMedia('(pointer: coarse)').matches) {
+  if (!imageText && navigator.share && window.matchMedia('(pointer: coarse)').matches) {
     try { await navigator.share(url ? { title, text, url } : { title, text }); return; }
     catch (error) { if (error?.name === 'AbortError') return; }
   }
-  openSharePanel(title, text, url);
+  openSharePanel(title, text, url, imageText);
 }
 
 /* ---------------------------------------------------------------------
