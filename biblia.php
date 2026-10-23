@@ -65,7 +65,9 @@ if ($selectedBook && $trans) {
     <div class="page-title-row"><span class="page-icon"><i class="fas fa-book-open"></i></span><div><h1><?= e($selectedBook['name']) ?></h1><p><?= (int) $selectedBook['chapters_count'] ?> capítulos · tradução <strong><?= e($trans['abbreviation']) ?></strong></p></div></div>
   </header>
 
-  <div class="chapter-grid chapters-page">
+  <section class="chapter-selection-shell">
+    <div class="chapter-selection-intro"><span class="chapter-book-abbr"><?= e($selectedBook['abbreviation']) ?></span><div><strong>Escolha o capítulo</strong><small>Toque num número para começar a leitura em <?= e($selectedBook['name']) ?>.</small></div></div>
+  <div class="chapter-grid chapters-page" aria-label="Capítulos de <?= e($selectedBook['name']) ?>">
     <?php for ($c = 1; $c <= (int) $selectedBook['chapters_count']; $c++): ?>
       <a class="chapter-tile<?= ($chaptersWithVerses[$c] ?? false) ? '' : ' empty' ?>"
          href="<?= url('/leitura.php?translation=' . urlencode($trans['abbreviation']) . '&book=' . $selectedBook['slug'] . '&chapter=' . $c) ?>">
@@ -73,6 +75,7 @@ if ($selectedBook && $trans) {
       </a>
     <?php endfor; ?>
   </div>
+  </section>
 
   <?php if ($selectedBook['chapters_count'] === 0): ?>
     <div class="empty-state"><i class="fas fa-circle-exclamation"></i>Livro sem capítulos registados.</div>

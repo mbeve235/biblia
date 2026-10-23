@@ -224,6 +224,14 @@ const BookPicker = {
     const view = this.el('bp-view');
     view.innerHTML = '';
 
+    const intro = document.createElement('div');
+    intro.className = 'vp-picker-intro';
+    intro.innerHTML = '<strong>Que livro deseja ler?</strong><small>Pesquise pelo nome ou explore por testamento.</small>';
+    view.appendChild(intro);
+
+    const searchBox = document.createElement('label');
+    searchBox.className = 'vp-search-box';
+    searchBox.innerHTML = '<i class="fas fa-magnifying-glass" aria-hidden="true"></i>';
     const search = document.createElement('input');
     search.type = 'search';
     search.className = 'vp-search';
@@ -231,7 +239,8 @@ const BookPicker = {
     search.value = this._query;
     search.setAttribute('aria-label', 'Pesquisar livro');
     search.oninput = debounce(() => { this._query = search.value; this.listBooks(); }, 120);
-    view.appendChild(search);
+    searchBox.appendChild(search);
+    view.appendChild(searchBox);
 
     const wrap = document.createElement('div');
     wrap.className = 'vp-bookwrap';
@@ -242,10 +251,27 @@ const BookPicker = {
   },
 
   listBooks(wrap) {
+    wrap = wrap || this.el('bp-view')?.querySelector('.vp-bookwrap');
+    if (!wrap || !this.books) return;
     wrap.innerHTML = '';
     const q = this.norm(this._query.trim());
     let shown = 0;
     const groups = this.books.filter((g) => g.testament === this._testament);
+    if (!q) {
+      const recentSlugs = JSON.parse(localStorage.getItem('bw_recent_books') || '[]');
+      const allBooks = this.books.flatMap((group) => group.books);
+      const recentBooks = recentSlugs.map((slug) => allBooks.find((book) => book.slug === slug)).filter((book) => book && book.testament === this._testament).slice(0, 4);
+      if (recentBooks.length) {
+        const recentLabel = document.createElement('div');
+        recentLabel.className = 'vp-group-label vp-recent-label';
+        recentLabel.innerHTML = '<i class="fas fa-clock-rotate-left"></i> Recentes';
+        wrap.appendChild(recentLabel);
+        const recentGrid = document.createElement('div');
+        recentGrid.className = 'vp-recent-books';
+        recentBooks.forEach((book) => recentGrid.appendChild(this.bookButton(book)));
+        wrap.appendChild(recentGrid);
+      }
+    }
     for (const g of groups) {
       const books = g.books.filter((b) => !q ||
         this.norm(b.name).includes(q) || this.norm(b.abbreviation).includes(q) || this.norm(b.slug).includes(q));
@@ -257,24 +283,28 @@ const BookPicker = {
 
       const grid = document.createElement('div');
       grid.className = 'vp-books';
-      for (const b of books) {
-        const isCurrent = !!(this.currentSlug && b.slug === this.currentSlug);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'vp-book' + (isCurrent ? ' current' : '');
-        btn.innerHTML =
-          '<span class="bk-badge">' + BRAND_SVG(13) + '</span>' +
-          '<span class="vp-book-name">' + this.esc(b.name) + (isCurrent ? ' <i class="fas fa-circle-check" title="A ler"></i>' : '') + '</span>' +
-          '<small class="vp-book-ch">' + b.chapters_count + ' cap.</small>';
-        btn.onclick = () => this.renderChapters(b);
-        grid.appendChild(btn);
-        shown++;
-      }
+      for (const b of books) { grid.appendChild(this.bookButton(b)); shown++; }
       wrap.appendChild(grid);
     }
     if (!shown) {
       wrap.innerHTML = '<div class="vp-empty"><i class="fas fa-book"></i>Nenhum livro encontrado para “' + this.esc(this._query.trim()) + '”.</div>';
     }
+  },
+
+  bookButton(book) {
+    const isCurrent = !!(this.currentSlug && book.slug === this.currentSlug);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'vp-book' + (isCurrent ? ' current' : '');
+    btn.innerHTML = '<span class="vp-book-abbr">' + this.esc(book.abbreviation || book.name.slice(0, 3)) + '</span>' +
+      '<span class="vp-book-name">' + this.esc(book.name) + (isCurrent ? '<small>A ler agora</small>' : '') + '</span>' +
+      '<span class="vp-book-ch">' + book.chapters_count + '<small>cap.</small></span><i class="fas fa-chevron-right"></i>';
+    btn.onclick = () => {
+      const recent = JSON.parse(localStorage.getItem('bw_recent_books') || '[]');
+      localStorage.setItem('bw_recent_books', JSON.stringify([book.slug, ...recent.filter((slug) => slug !== book.slug)].slice(0, 6)));
+      this.renderChapters(book);
+    };
+    return btn;
   },
 
   renderCrumb(book) {
@@ -297,6 +327,11 @@ const BookPicker = {
     const view = this.el('bp-view');
     view.innerHTML = '';
     this.renderCrumb(book);
+
+    const heading = document.createElement('div');
+    heading.className = 'vp-chapter-heading';
+    heading.innerHTML = '<span class="vp-book-abbr">' + this.esc(book.abbreviation || book.name.slice(0, 3)) + '</span><div><strong>' + this.esc(book.name) + '</strong><small>' + (book.testament === 'AT' ? 'Antigo Testamento' : 'Novo Testamento') + ' · escolha um capítulo</small></div>';
+    view.appendChild(heading);
 
     const cg = document.createElement('div');
     cg.className = 'vp-chapters';
@@ -326,6 +361,7 @@ const BookPicker = {
     }
     view.appendChild(cg);
     this.setLoc(book, 0);
+    requestAnimationFrame(() => cg.querySelector('.current')?.scrollIntoView({ block: 'center' }));
   },
 };
 
