@@ -171,7 +171,8 @@ async function createScriptureCard(title, text, url = '', options = {}) {
 
   ctx.textAlign = 'center'; ctx.fillStyle = theme.accent;
   ctx.font = '700 34px system-ui, sans-serif'; ctx.fillText('BÍBLIA WEB', 540, 270);
-  ctx.fillStyle = theme.detail; ctx.font = '700 66px Georgia, serif'; ctx.fillText('“', 540, height * .29);
+  // Mantém a aspa abaixo da marca em todos os formatos, inclusive o quadrado.
+  ctx.fillStyle = theme.detail; ctx.font = '700 66px Georgia, serif'; ctx.fillText('“', 540, 370);
 
   let fontSize = 55;
   let lines = [];

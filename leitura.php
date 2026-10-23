@@ -292,7 +292,8 @@ function bwShareVerse(num, el) {
   // Link amigável para o versículo: /biblia/ARC/joao/3?verse=16#v16
   const url = new URL(<?= json_encode($book ? scripture_url($abbr, $book['slug'], $chapNum) : url('/')) ?>, location.href);
   url.searchParams.set('verse', String(num)); url.hash = 'v' + num;
-  shareText(<?= json_encode(($book['name'] ?? '') . ' ' . $chapNum . ' — ' . $abbr) ?>,
+  const shareTitle = bwVerseRef(num, el).replace(' (' + <?= json_encode($abbr) ?> + ')', ' · ' + <?= json_encode($abbr) ?>);
+  shareText(shareTitle,
             bwVerseRef(num, el) + ' — ' + verseText,
             url.toString(), verseText);
 }
@@ -409,12 +410,14 @@ document.getElementById('selected-share')?.addEventListener('click', () => {
   if (!selected.length) return toast('Seleccione pelo menos um versículo.', 'error');
   const nums = selected.map((verse) => verse.dataset.verseNumber);
   const url = new URL(location.href); url.hash = 'v' + nums[0];
+  const selectionReference = <?= json_encode(($book['name'] ?? '') . ' ' . $chapNum . ':') ?> +
+    nums[0] + (nums.length > 1 ? '–' + nums[nums.length - 1] : '') + ' · ' + <?= json_encode($abbr) ?>;
   const imageText = selected.map((verse) => {
     const copy = verse.cloneNode(true);
     copy.querySelectorAll('.vtools,.vnum,.verse-select-indicator,.note-indicator').forEach((node) => node.remove());
     return verse.dataset.verseNumber + '. ' + copy.textContent.trim();
   }).join('\n');
-  shareText(<?= json_encode(($book['name'] ?? '') . ' ' . $chapNum . ' — ' . $abbr) ?>, selectionText(), url.toString(), imageText);
+  shareText(selectionReference, selectionText(), url.toString(), imageText);
 });
 document.getElementById('selected-cancel')?.addEventListener('click', () => setSelectionMode(false));
 
