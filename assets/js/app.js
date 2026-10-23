@@ -145,22 +145,33 @@ function wrapCanvasText(context, text, maxWidth) {
   return lines;
 }
 
-async function createScriptureCard(title, text, url = '') {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1080; canvas.height = 1350;
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 1080, 1350);
-  gradient.addColorStop(0, '#f7f2e8'); gradient.addColorStop(1, '#e7eee8');
-  ctx.fillStyle = gradient; ctx.fillRect(0, 0, 1080, 1350);
+const SCRIPTURE_CARD_THEMES = {
+  serene: { name: 'Sereno', start: '#f7f2e8', end: '#e7eee8', accent: '#486f63', text: '#263d36', detail: '#b58b4b', muted: '#6d7d76' },
+  night: { name: 'Noite', start: '#15241f', end: '#29453c', accent: '#d8b873', text: '#fffaf0', detail: '#d8b873', muted: '#d5dfda' },
+  dawn: { name: 'Aurora', start: '#fff1dc', end: '#e6b9a8', accent: '#8b4e43', text: '#55332e', detail: '#a76b4f', muted: '#765a54' },
+  royal: { name: 'Real', start: '#e9e7f4', end: '#bec8df', accent: '#3c4770', text: '#252d4b', detail: '#9c7741', muted: '#58617d' }
+};
 
-  ctx.fillStyle = '#486f63'; ctx.fillRect(0, 0, 1080, 22);
+async function createScriptureCard(title, text, url = '', options = {}) {
+  const formats = { portrait: [1080, 1350], square: [1080, 1080], story: [1080, 1920] };
+  const [width, height] = formats[options.format] || formats.portrait;
+  const theme = SCRIPTURE_CARD_THEMES[options.theme] || SCRIPTURE_CARD_THEMES.serene;
+  const align = options.align === 'left' ? 'left' : 'center';
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, theme.start); gradient.addColorStop(1, theme.end);
+  ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = theme.accent; ctx.fillRect(0, 0, width, 22);
   ctx.beginPath(); ctx.arc(540, 162, 62, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 10; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(540, 126); ctx.lineTo(540, 198); ctx.moveTo(515, 151); ctx.lineTo(565, 151); ctx.stroke();
 
-  ctx.textAlign = 'center'; ctx.fillStyle = '#36574e';
+  ctx.textAlign = 'center'; ctx.fillStyle = theme.accent;
   ctx.font = '700 34px system-ui, sans-serif'; ctx.fillText('BÍBLIA WEB', 540, 270);
-  ctx.fillStyle = '#b58b4b'; ctx.font = '700 66px Georgia, serif'; ctx.fillText('“', 540, 374);
+  ctx.fillStyle = theme.detail; ctx.font = '700 66px Georgia, serif'; ctx.fillText('“', 540, height * .29);
 
   let fontSize = 55;
   let lines = [];
@@ -171,22 +182,24 @@ async function createScriptureCard(title, text, url = '') {
   } while (lines.length > 10 && fontSize > 35);
   const lineHeight = fontSize * 1.45;
   const textHeight = lines.length * lineHeight;
-  let y = Math.max(455, 700 - textHeight / 2);
-  ctx.fillStyle = '#263d36';
-  lines.forEach((line) => { if (line) ctx.fillText(line, 540, y); y += lineHeight; });
+  const textCenter = height * .54;
+  let y = Math.max(height * .35, textCenter - textHeight / 2);
+  ctx.fillStyle = theme.text; ctx.textAlign = align;
+  const textX = align === 'left' ? 130 : 540;
+  lines.forEach((line) => { if (line) ctx.fillText(line, textX, y); y += lineHeight; });
 
-  ctx.fillStyle = '#486f63'; ctx.font = '700 38px system-ui, sans-serif';
-  ctx.fillText(title, 540, 1135);
-  ctx.strokeStyle = 'rgba(72,111,99,.25)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(150, 1190); ctx.lineTo(930, 1190); ctx.stroke();
-  ctx.fillStyle = '#6d7d76'; ctx.font = '500 25px system-ui, sans-serif';
-  ctx.fillText(url ? new URL(url, location.href).host : location.host, 540, 1252);
+  ctx.textAlign = 'center'; ctx.fillStyle = theme.accent; ctx.font = '700 38px system-ui, sans-serif';
+  ctx.fillText(title, 540, height - 215);
+  ctx.globalAlpha = .28; ctx.strokeStyle = theme.accent; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(150, height - 160); ctx.lineTo(930, height - 160); ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.fillStyle = theme.muted; ctx.font = '500 25px system-ui, sans-serif';
+  ctx.fillText(url ? new URL(url, location.href).host : location.host, 540, height - 98);
   return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Falha ao criar a imagem.')), 'image/jpeg', .92));
 }
 
-async function shareScriptureImage(title, text, url, downloadOnly = false) {
+async function shareScriptureImage(title, text, url, downloadOnly = false, options = {}) {
   try {
-    const blob = await createScriptureCard(title, text, url);
+    const blob = await createScriptureCard(title, text, url, options);
     const safeName = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
     const file = new File([blob], (safeName || 'versiculo') + '-biblia-web.jpg', { type: 'image/jpeg' });
     if (!downloadOnly && navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
@@ -201,6 +214,47 @@ async function shareScriptureImage(title, text, url, downloadOnly = false) {
   } catch (error) {
     if (error?.name !== 'AbortError') toast('Não foi possível criar a imagem.', 'error');
   }
+}
+
+function openScriptureCardEditor(title, text, url) {
+  document.getElementById('global-share-panel')?.remove();
+  document.getElementById('scripture-card-editor')?.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'scripture-card-editor'; overlay.className = 'share-overlay card-editor-overlay open';
+  overlay.innerHTML = '<section class="share-sheet card-editor" role="dialog" aria-modal="true" aria-labelledby="card-editor-title">' +
+    '<div class="share-sheet-head"><div><small>Personalizar</small><h3 id="card-editor-title">Imagem da Escritura</h3></div><button type="button" data-card-close aria-label="Fechar"><i class="fas fa-xmark"></i></button></div>' +
+    '<div class="card-editor-body"><div class="card-live-preview"><span class="card-loading"><i class="fas fa-circle-notch fa-spin"></i></span><img alt="Pré-visualização do cartão bíblico"></div>' +
+    '<div class="card-controls"><fieldset><legend>Estilo</legend><div class="card-theme-options"></div></fieldset>' +
+    '<fieldset><legend>Formato</legend><div class="reader-option-group card-format-options"><button type="button" data-format="portrait" class="active">Publicação</button><button type="button" data-format="square">Quadrado</button><button type="button" data-format="story">Story</button></div></fieldset>' +
+    '<fieldset><legend>Texto</legend><div class="reader-option-group card-align-options"><button type="button" data-align="center" class="active"><i class="fas fa-align-center"></i> Centro</button><button type="button" data-align="left"><i class="fas fa-align-left"></i> Esquerda</button></div></fieldset></div></div>' +
+    '<div class="card-editor-actions"><button class="btn btn-ghost" type="button" data-card-download><i class="fas fa-download"></i> Baixar</button><button class="btn btn-primary" type="button" data-card-share><i class="fas fa-arrow-up-from-bracket"></i> Partilhar imagem</button></div></section>';
+  const themes = overlay.querySelector('.card-theme-options');
+  Object.entries(SCRIPTURE_CARD_THEMES).forEach(([key, theme], index) => {
+    const button = document.createElement('button'); button.type = 'button'; button.dataset.theme = key;
+    button.className = index === 0 ? 'active' : ''; button.title = theme.name; button.setAttribute('aria-label', theme.name);
+    button.style.setProperty('--swatch-start', theme.start); button.style.setProperty('--swatch-end', theme.end);
+    button.innerHTML = '<span></span><small>' + theme.name + '</small>'; themes.appendChild(button);
+  });
+  const options = { theme: 'serene', format: 'portrait', align: 'center' };
+  const image = overlay.querySelector('.card-live-preview img');
+  const loading = overlay.querySelector('.card-loading');
+  let previewUrl = '';
+  const updatePreview = async () => {
+    loading.hidden = false;
+    const blob = await createScriptureCard(title, text, url, options);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = URL.createObjectURL(blob); image.src = previewUrl; loading.hidden = true;
+  };
+  const choose = (selector, key) => overlay.querySelectorAll(selector).forEach((button) => button.addEventListener('click', () => {
+    options[key] = button.dataset[key]; overlay.querySelectorAll(selector).forEach((item) => item.classList.toggle('active', item === button)); updatePreview();
+  }));
+  choose('[data-theme]', 'theme'); choose('[data-format]', 'format'); choose('[data-align]', 'align');
+  const close = () => { if (previewUrl) URL.revokeObjectURL(previewUrl); document.body.classList.remove('share-lock'); overlay.remove(); };
+  overlay.querySelector('[data-card-close]').onclick = close;
+  overlay.onclick = (event) => { if (event.target === overlay) close(); };
+  overlay.querySelector('[data-card-download]').onclick = () => shareScriptureImage(title, text, url, true, options);
+  overlay.querySelector('[data-card-share]').onclick = () => shareScriptureImage(title, text, url, false, options);
+  document.body.appendChild(overlay); document.body.classList.add('share-lock'); updatePreview();
 }
 
 function openSharePanel(title, text, url = '', imageText = '') {
@@ -232,8 +286,8 @@ function openSharePanel(title, text, url = '', imageText = '') {
   overlay.querySelector('[data-share="whatsapp"]').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank', 'noopener,noreferrer');
   overlay.querySelector('[data-share="facebook"]').onclick = () => window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url || location.href), '_blank', 'noopener,noreferrer');
   overlay.querySelector('[data-share="email"]').onclick = () => { location.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full); };
-  overlay.querySelector('[data-share="share-image"]')?.addEventListener('click', () => shareScriptureImage(title, imageText, url));
-  overlay.querySelector('[data-share="download-image"]')?.addEventListener('click', () => shareScriptureImage(title, imageText, url, true));
+  overlay.querySelector('[data-share="share-image"]')?.addEventListener('click', () => openScriptureCardEditor(title, imageText, url));
+  overlay.querySelector('[data-share="download-image"]')?.addEventListener('click', () => openScriptureCardEditor(title, imageText, url));
   overlay.querySelector('[data-share="native"]')?.addEventListener('click', async () => { try { await navigator.share(url ? { title, text, url } : { title, text }); close(); } catch (e) { /* cancelado */ } });
   overlay.querySelector('[data-share="copy-link"]').onclick = () => { copyText(url); close(); };
   overlay.querySelector('[data-share="copy-text"]').onclick = () => { copyText(full); close(); };
