@@ -31,7 +31,7 @@ if ($action === 'translation') {
     if (!$trans) json_fail('Tradução não encontrada.', 404);
 
     $rows = db_all(
-        'SELECT b.name AS book, b.abbreviation AS book_abbr, b.testament, c.chapter_number, v.verse_number, v.text
+        'SELECT b.name AS book, b.abbreviation AS book_abbr, b.testament, c.chapter_number, v.verse_number, v.heading, v.text
          FROM verses v
          JOIN chapters c ON c.id = v.chapter_id
          JOIN books b ON b.id = v.book_id
@@ -45,9 +45,9 @@ if ($action === 'translation') {
 
     if ($format === 'csv') {
         $out = fopen('php://temp', 'r+');
-        fputcsv($out, ['translation', 'book', 'chapter', 'verse', 'text'], ',', '"', '\\');
+        fputcsv($out, ['translation', 'book', 'chapter', 'verse', 'heading', 'text'], ',', '"', '\\');
         foreach ($rows as $r) {
-            fputcsv($out, [$trans['abbreviation'], $r['book'], $r['chapter_number'], $r['verse_number'], $r['text']], ',', '"', '\\');
+            fputcsv($out, [$trans['abbreviation'], $r['book'], $r['chapter_number'], $r['verse_number'], $r['heading'], $r['text']], ',', '"', '\\');
         }
         rewind($out);
         $csv = (string) stream_get_contents($out);
@@ -66,7 +66,9 @@ if ($action === 'translation') {
         if (!isset($books[$bn]['chapters'][$cn])) {
             $books[$bn]['chapters'][$cn] = ['chapter' => $cn, 'verses' => []];
         }
-        $books[$bn]['chapters'][$cn]['verses'][] = ['verse' => (int) $r['verse_number'], 'text' => $r['text']];
+        $verse = ['verse' => (int) $r['verse_number'], 'text' => $r['text']];
+        if (!empty($r['heading'])) $verse['heading'] = $r['heading'];
+        $books[$bn]['chapters'][$cn]['verses'][] = $verse;
     }
     $payload = [
         'translation' => [

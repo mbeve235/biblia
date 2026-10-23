@@ -249,13 +249,18 @@ class Importer
             if (count($row) < 5) {
                 throw new RuntimeException('Linha ' . ($i + 1) . ' do CSV tem menos de 5 colunas.');
             }
-            [$trans, $book, $ch, $vs, $text] = array_map('trim', array_slice($row, 0, 5));
+            if (count($row) >= 6) {
+                [$trans, $book, $ch, $vs, $heading, $text] = array_map('trim', array_slice($row, 0, 6));
+            } else {
+                [$trans, $book, $ch, $vs, $text] = array_map('trim', array_slice($row, 0, 5));
+                $heading = '';
+            }
             if ($trans !== '') $defaultTrans = $trans;
             if ($book === '' || $text === '') {
                 throw new RuntimeException('Linha ' . ($i + 1) . ' incompleta (livro ou texto vazio).');
             }
             if (!isset($books[$book])) { $books[$book] = ['chapters' => []]; $order[] = $book; }
-            $books[$book]['chapters'][(int) $ch][(int) $vs] = $text;
+            $books[$book]['chapters'][(int) $ch][(int) $vs] = ['text' => $text, 'heading' => $heading];
         }
 
         $out = [];
@@ -265,7 +270,7 @@ class Importer
             foreach ($books[$name]['chapters'] as $ch => $verses) {
                 ksort($verses);
                 $vList = [];
-                foreach ($verses as $vs => $text) $vList[] = ['verse' => $vs, 'text' => $text];
+                foreach ($verses as $vs => $verseData) $vList[] = ['verse' => $vs, 'heading' => $verseData['heading'], 'text' => $verseData['text']];
                 $chapters[] = ['chapter' => $ch, 'verses' => $vList];
             }
             $out[] = ['name' => $name, 'chapters' => $chapters];
@@ -389,7 +394,7 @@ class Importer
                             $t = trim($vt);
                             if ($t !== '') $vList[] = ['verse' => $vi + 1, 'text' => $t];
                         } elseif (is_array($vt) && isset($vt['text'])) {
-                            $vList[] = ['verse' => (int) ($vt['verse'] ?? $vi + 1), 'text' => trim((string) $vt['text'])];
+                            $vList[] = ['verse' => (int) ($vt['verse'] ?? $vi + 1), 'heading' => trim((string) ($vt['heading'] ?? $vt['title'] ?? '')), 'text' => trim((string) $vt['text'])];
                         }
                     }
                     if ($vList) $chapters[] = ['chapter' => $ci + 1, 'verses' => $vList];
@@ -402,7 +407,7 @@ class Importer
                         $vList = [];
                         foreach ($cv['verses'] as $vv) {
                             if (is_array($vv) && isset($vv['text'])) {
-                                $vList[] = ['verse' => (int) ($vv['verse'] ?? count($vList) + 1), 'text' => trim((string) $vv['text'])];
+                                $vList[] = ['verse' => (int) ($vv['verse'] ?? count($vList) + 1), 'heading' => trim((string) ($vv['heading'] ?? $vv['title'] ?? '')), 'text' => trim((string) $vv['text'])];
                             } elseif (is_string($vv)) {
                                 $vList[] = ['verse' => count($vList) + 1, 'text' => trim($vv)];
                             }
@@ -413,7 +418,7 @@ class Importer
                         $vList = [];
                         foreach ($cv as $vk => $vt) {
                             if (is_string($vt)) $vList[] = ['verse' => (int) $vk, 'text' => trim($vt)];
-                            elseif (is_array($vt) && isset($vt['text'])) $vList[] = ['verse' => (int) ($vt['verse'] ?? $vk), 'text' => trim((string) $vt['text'])];
+                            elseif (is_array($vt) && isset($vt['text'])) $vList[] = ['verse' => (int) ($vt['verse'] ?? $vk), 'heading' => trim((string) ($vt['heading'] ?? $vt['title'] ?? '')), 'text' => trim((string) $vt['text'])];
                         }
                         $chapters[] = ['chapter' => $chNum, 'verses' => $vList];
                     }
@@ -424,7 +429,7 @@ class Importer
                 $vList = [];
                 foreach ($b['verses'] as $vk => $vt) {
                     if (is_string($vt)) $vList[] = ['verse' => (int) $vk, 'text' => trim($vt)];
-                    elseif (is_array($vt) && isset($vt['text'])) $vList[] = ['verse' => (int) ($vt['verse'] ?? $vk), 'text' => trim((string) $vt['text'])];
+                    elseif (is_array($vt) && isset($vt['text'])) $vList[] = ['verse' => (int) ($vt['verse'] ?? $vk), 'heading' => trim((string) ($vt['heading'] ?? $vt['title'] ?? '')), 'text' => trim((string) $vt['text'])];
                 }
                 if ($vList) $chapters[] = ['chapter' => 1, 'verses' => $vList];
             }
@@ -503,9 +508,9 @@ class Importer
         $pdo->beginTransaction();
         try {
             $insert = $pdo->prepare(
-                'INSERT INTO verses (translation_id, book_id, chapter_id, verse_number, text, search_text)
-                 VALUES (?, ?, ?, ?, ?, ?)
-                 ON DUPLICATE KEY UPDATE text = VALUES(text), search_text = VALUES(search_text)'
+                'INSERT INTO verses (translation_id, book_id, chapter_id, verse_number, heading, text, search_text)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE heading = VALUES(heading), text = VALUES(text), search_text = VALUES(search_text)'
             );
             $bookIds = [];
             foreach ($chunk as $item) {
@@ -517,7 +522,8 @@ class Importer
                 }
                 $chapterId = $this->ensureChapter($bookId, $item['chapter']);
                 $search = $this->toSearchText($item['text']);
-                $insert->execute([$translationId, $bookId, $chapterId, $item['verse'], $item['text'], $search]);
+                $heading = trim((string) ($item['heading'] ?? ''));
+                $insert->execute([$translationId, $bookId, $chapterId, $item['verse'], $heading !== '' ? $heading : null, $item['text'], $search]);
                 if ($insert->rowCount() === 1) $stats['verses']++;
                 else $stats['duplicates']++; // actualizado (já existia)
             }
@@ -552,6 +558,7 @@ class Importer
                         'book'    => $b['name'],
                         'chapter' => $ch['chapter'],
                         'verse'   => $v['verse'],
+                        'heading' => trim((string) ($v['heading'] ?? $v['title'] ?? '')),
                         'text'    => $v['text'],
                     ];
                 }

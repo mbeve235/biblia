@@ -22,11 +22,19 @@ $chapterRow = $book ? db_one('SELECT id FROM chapters WHERE book_id = ? AND chap
 $verses = [];
 
 if ($trans && $book && $chapterRow) {
-    $verses = db_all(
-        'SELECT id, verse_number, text FROM verses
-         WHERE translation_id = ? AND chapter_id = ? ORDER BY verse_number',
-        [$trans['id'], $chapterRow['id']]
-    );
+    try {
+        $verses = db_all(
+            'SELECT id, verse_number, heading, text FROM verses
+             WHERE translation_id = ? AND chapter_id = ? ORDER BY verse_number',
+            [$trans['id'], $chapterRow['id']]
+        );
+    } catch (PDOException $error) {
+        $verses = db_all(
+            'SELECT id, verse_number, NULL AS heading, text FROM verses
+             WHERE translation_id = ? AND chapter_id = ? ORDER BY verse_number',
+            [$trans['id'], $chapterRow['id']]
+        );
+    }
 }
 
 // Título + Open Graph (definidos ANTES do header para <title> e prévias correctas)
@@ -186,6 +194,9 @@ if ($user = current_user()) {
         $hasNote = isset($noteIds[$vid]);
         $highlightColor = $highlightColors[$vid] ?? '';
     ?>
+      <?php if (trim((string) ($v['heading'] ?? '')) !== ''): ?>
+        <h2 class="verse-section-heading"><?= e($v['heading']) ?></h2>
+      <?php endif; ?>
       <p class="verse <?= $isFav ? 'fav' : '' ?><?= $highlightColor ? ' verse-highlight-' . e($highlightColor) : '' ?>" id="v<?= (int) $v['verse_number'] ?>" data-verse-id="<?= $vid ?>" data-verse-number="<?= (int) $v['verse_number'] ?>" data-highlight="<?= e($highlightColor) ?>">
         <span class="verse-select-indicator" aria-hidden="true"><i class="fas fa-check"></i></span>
         <span class="vnum"><?= (int) $v['verse_number'] ?></span>

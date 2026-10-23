@@ -54,7 +54,7 @@ $preselect = (int) ($_GET['translation_id'] ?? 0);
   <div style="text-align:center;color:var(--text-faint);margin:.8rem 0">— ou —</div>
 
   <label class="field"><span>Colar conteúdo estruturado</span>
-    <textarea id="imp-text" rows="7" placeholder='{"translation":{"name":"Minha Tradução","abbreviation":"MT"},"books":[{"name":"Génesis","chapters":[{"chapter":1,"verses":[{"verse":1,"text":"No princípio…"}]}]}]}'></textarea>
+          <textarea id="imp-text" rows="7" placeholder='{"translation":{"name":"Minha Tradução","abbreviation":"MT"},"books":[{"name":"Génesis","chapters":[{"chapter":1,"verses":[{"verse":1,"heading":"A criação","text":"No princípio…"}]}]}]}'></textarea>
   </label>
 
   <button class="btn btn-primary" id="btn-validate" type="button"><i class="fas fa-check-double"></i> Validar</button>

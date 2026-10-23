@@ -15,11 +15,12 @@ $fChap  = (int) ($_GET['chapter'] ?? 0);
 
 $verses = [];
 $chaptersList = [];
+$hasHeading = (bool) db_one("SHOW COLUMNS FROM verses LIKE 'heading'");
 if ($fTrans && $fBook) {
     $chaptersList = db_all('SELECT chapter_number FROM chapters WHERE book_id = ? ORDER BY chapter_number', [$fBook]);
     if ($fChap) {
         $verses = db_all(
-            'SELECT v.id, v.verse_number, v.text FROM verses v
+            'SELECT v.id, v.verse_number, ' . ($hasHeading ? 'v.heading' : 'NULL AS heading') . ', v.text FROM verses v
              JOIN chapters c ON c.id = v.chapter_id
              WHERE v.translation_id = ? AND c.book_id = ? AND c.chapter_number = ?
              ORDER BY v.verse_number',
@@ -33,9 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $vid = (int) ($_POST['verse_id'] ?? 0);
     $text = trim((string) ($_POST['text'] ?? ''));
+    $heading = trim((string) ($_POST['heading'] ?? ''));
     if ($vid && $text !== '') {
-        db_exec('UPDATE verses SET text = ?, search_text = ? WHERE id = ?',
-            [$text, Importer::toSearchText($text), $vid]);
+        if ($hasHeading) {
+            db_exec('UPDATE verses SET heading = ?, text = ?, search_text = ? WHERE id = ?',
+                [$heading !== '' ? $heading : null, $text, Importer::toSearchText($text), $vid]);
+        } else {
+            db_exec('UPDATE verses SET text = ?, search_text = ? WHERE id = ?',
+                [$text, Importer::toSearchText($text), $vid]);
+        }
         $ok = 'Versículo actualizado.';
         log_activity(current_user()['id'], 'verse_edit', '#' . $vid);
     }
@@ -46,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <header class="page-header admin-page-header"><span class="page-kicker">Conteúdo</span><div class="page-title-row"><span class="page-icon"><i class="fas fa-scroll"></i></span><div><h1>Versículos</h1><p>Consultar e corrigir versículos de qualquer tradução.</p></div></div></header>
 
 <?php if ($ok): ?><div class="alert alert-success"><?= e($ok) ?></div><?php endif; ?>
+<?php if (!$hasHeading): ?><div class="alert alert-warning">Execute a migração <code>database/migrations/20261023_verse_headings.sql</code> para editar títulos de secção.</div><?php endif; ?>
 
 <section class="card">
   <form method="get" style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end">
@@ -82,11 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php else: ?>
     <?php foreach ($verses as $v): ?>
       <section class="card" style="padding:.9rem 1.1rem">
-        <form method="post" style="display:flex;gap:.6rem;align-items:flex-start">
+        <form method="post" style="display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:start">
           <?= csrf_field() ?>
           <input type="hidden" name="verse_id" value="<?= (int) $v['id'] ?>">
           <span class="badge badge-accent" style="margin-top:.4rem"><?= (int) $v['verse_number'] ?></span>
-          <textarea name="text" rows="2" style="flex:1"><?= e($v['text']) ?></textarea>
+          <div style="display:grid;gap:.45rem"><input name="heading" maxlength="255" value="<?= e($v['heading'] ?? '') ?>" placeholder="Título antes deste versículo (opcional)" <?= !$hasHeading ? 'disabled' : '' ?>><textarea name="text" rows="2"><?= e($v['text']) ?></textarea></div>
           <button class="btn btn-sm btn-primary" type="submit" style="margin-top:.3rem"><i class="fas fa-floppy-disk"></i></button>
         </form>
       </section>

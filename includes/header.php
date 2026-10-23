@@ -17,7 +17,7 @@ $activeNav = $isReader ? 'biblia.php' : $currentFile;
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <?php if (!empty($noindex)): ?><meta name="robots" content="noindex"><?php endif; ?>
 <title><?= e($pageTitle) ?> — <?= e(APP_NAME) ?></title>
-<link rel="icon" href="<?= url('assets/img/favicon.svg') ?>" type="image/svg+xml"><link rel="alternate icon" href="<?= url('assets/img/favicon.ico') ?>" sizes="any"><link rel="apple-touch-icon" href="<?= url('assets/img/icon-180.png') ?>"><link rel="manifest" href="<?= url('site.webmanifest') ?>"><meta name="theme-color" content="#486f63">
+<link rel="icon" href="<?= url('assets/img/favicon.svg') ?>?v=3" type="image/svg+xml" sizes="any"><link rel="apple-touch-icon" href="<?= url('assets/img/icon-180.png') ?>"><link rel="manifest" href="<?= url('site.webmanifest') ?>"><meta name="theme-color" content="#486f63">
 <?php
 $ogTitle = $ogTitle ?? ($pageTitle !== APP_NAME ? $pageTitle : APP_NAME);
 $ogDesc = $ogDesc ?? 'Leia, pesquise e aprofunde a Bíblia com conforto.';

@@ -124,6 +124,7 @@ CREATE TABLE verses (
   book_id        SMALLINT UNSIGNED NOT NULL,
   chapter_id     INT UNSIGNED NOT NULL,
   verse_number   SMALLINT UNSIGNED NOT NULL,
+  heading        VARCHAR(255) NULL,
   text           TEXT NOT NULL,
   search_text    TEXT NULL,
   created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
