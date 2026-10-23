@@ -21,12 +21,36 @@ $activeNav = $isReader ? 'biblia.php' : $currentFile;
 <?php
 $ogTitle = $ogTitle ?? ($pageTitle !== APP_NAME ? $pageTitle : APP_NAME);
 $ogDesc = $ogDesc ?? 'Leia, pesquise e aprofunde a Bíblia com conforto.';
-if (!isset($ogUrl)) { $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'; $ogUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . ($_SERVER['REQUEST_URI'] ?? '/'); }
-$ogImagePath = __DIR__ . '/../assets/img/social-preview-v2.jpg';
-$ogImage = url('assets/img/social-preview-v2.jpg') . '?v=' . (is_file($ogImagePath) ? filemtime($ogImagePath) : APP_VERSION);
+if (!isset($ogUrl)) {
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+          || strtolower(trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0])) === 'https';
+    $scheme = $https ? 'https' : 'http';
+    $ogUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . ($_SERVER['REQUEST_URI'] ?? '/');
+}
+
+// Um URL direto e estável é mais compatível com os robôs de pré-visualização
+// (em especial o WhatsApp) do que um ficheiro de imagem com query string.
+$ogImage = url('assets/img/social-preview-v2.jpg');
 $ogType = $ogType ?? 'website';
 ?>
-<link rel="canonical" href="<?= e($ogUrl) ?>"><meta property="og:type" content="<?= e($ogType) ?>"><meta property="og:site_name" content="<?= e(APP_NAME) ?>"><meta property="og:title" content="<?= e($ogTitle) ?>"><meta property="og:description" content="<?= e($ogDesc) ?>"><meta property="og:url" content="<?= e($ogUrl) ?>"><meta property="og:image" content="<?= e($ogImage) ?>"><meta property="og:image:secure_url" content="<?= e($ogImage) ?>"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="<?= e(APP_NAME) ?> — A Palavra, mais próxima do seu dia."><meta property="og:locale" content="pt_PT"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="<?= e($ogTitle) ?>"><meta name="twitter:description" content="<?= e($ogDesc) ?>"><meta name="twitter:image" content="<?= e($ogImage) ?>">
+<link rel="canonical" href="<?= e($ogUrl) ?>">
+<meta property="og:type" content="<?= e($ogType) ?>">
+<meta property="og:site_name" content="<?= e(APP_NAME) ?>">
+<meta property="og:title" content="<?= e($ogTitle) ?>">
+<meta property="og:description" content="<?= e($ogDesc) ?>">
+<meta property="og:url" content="<?= e($ogUrl) ?>">
+<meta property="og:image" content="<?= e($ogImage) ?>">
+<meta property="og:image:url" content="<?= e($ogImage) ?>">
+<?php if (str_starts_with($ogImage, 'https://')): ?><meta property="og:image:secure_url" content="<?= e($ogImage) ?>"><?php endif; ?>
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<?= e(APP_NAME) ?> — A Palavra, mais próxima do seu dia.">
+<meta property="og:locale" content="pt_PT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<?= e($ogTitle) ?>">
+<meta name="twitter:description" content="<?= e($ogDesc) ?>">
+<meta name="twitter:image" content="<?= e($ogImage) ?>">
 <?php $faUrl = fontawesome_url(); ?><?php if ($faUrl): ?><link rel="stylesheet" href="<?= $faUrl ?>"><?php else: ?><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.1.0/css/all.min.css"><?php endif; ?>
 <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=<?= filemtime(__DIR__ . '/../assets/css/style.css') ?>">
 </head><body class="<?= e(trim($bodyClass . ($isReader ? ' app-reader' : '') . ($isAuthContext ? ' app-auth' : ''))) ?>">
