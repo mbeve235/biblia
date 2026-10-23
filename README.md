@@ -87,6 +87,12 @@ define('DB_USER', 'root');
 define('DB_PASS', '');        // XAMPP por omissão: vazio
 ```
 
+Em hospedagem pública, defina também o endereço HTTPS definitivo. Isso garante que WhatsApp, Facebook e outros serviços encontrem a imagem e os metadados dos links:
+
+```php
+define('APP_URL', 'https://seudominio.com');
+```
+
 ### 6. Abrir a aplicação
 - **Site:** <http://localhost/biblia-web>
 - **Painel:** <http://localhost/biblia-web/admin>

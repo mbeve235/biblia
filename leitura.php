@@ -44,8 +44,9 @@ if ($sharedVerse) {
     $ogDesc = 'Leia, pesquise e compare traduções da Bíblia.';
 }
 $ogUrl = $book
-    ? scripture_url($abbr, $book['slug'], $chapNum, $sharedVerse ? $anchor : null)
+    ? preg_replace('/#.*$/', '', scripture_url($abbr, $book['slug'], $chapNum, $sharedVerse ? $anchor : null))
     : url('/');
+$ogType = $sharedVerse ? 'article' : 'website';
 
 // Leitura inexistente (livro/capítulo inválido): 404 real com via de fuga
 if (!$book || !$chapterRow) {

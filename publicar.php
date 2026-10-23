@@ -34,6 +34,7 @@ if ($m) {
     $ogDesc = 'Este link de ministração não está disponível ou foi desactivado pelo autor.';
 }
 $ogUrl = $m ? ministry_share_url($token) : url('/publicar.php');
+$ogType = $m ? 'article' : 'website';
 $noindex = true; // link privado por convite: fora dos motores de busca
 
 require_once __DIR__ . '/includes/header.php';
