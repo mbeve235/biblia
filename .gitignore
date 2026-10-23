@@ -2,6 +2,7 @@
 logs/
 uploads/*
 !uploads/.gitkeep
+!uploads/.htaccess
 install.lock
 
 # Configuração privada da máquina (credenciais SMTP, produção, etc.)

@@ -1,0 +1,5 @@
+# Nada aqui é executado. A regra não depende de php_flag, que costuma estar
+# indisponível em hospedagens partilhadas como a InfinityFree.
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|pl|py|cgi|sh|asp|aspx|bat|exe|cmd|dll)$">
+  Require all denied
+</FilesMatch>
